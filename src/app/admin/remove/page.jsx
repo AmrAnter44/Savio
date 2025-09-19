@@ -179,7 +179,7 @@ export default function ManageProducts() {
   const [editName, setEditName] = useState("");
   const [editPrice, setEditPrice] = useState("");
   const [editNewPrice, setEditNewPrice] = useState("");
-  const [editColors, setEditColors] = useState([]);
+  const [editBrand, setEditBrand] = useState("");
   const [editPictures, setEditPictures] = useState([]);
   const [uploadingImages, setUploadingImages] = useState(false);
 
@@ -188,10 +188,11 @@ export default function ManageProducts() {
   const [productToDelete, setProductToDelete] = useState(null);
   const [deleting, setDeleting] = useState(false);
 
-  const colorOptions = [
-    "white","black","red","fuchsia","green","yellow","orange","purple",
-    "pink","brown","gray","beige","cyan","magenta","lime","indigo",
-    "violet","turquoise","gold","silver","navy","maroon","olive","teal"
+  const brandOptions = [
+    "Chanel", "Dior", "Tom Ford", "Yves Saint Laurent", "Versace", "Gucci", 
+    "Armani", "Calvin Klein", "Hugo Boss", "Dolce & Gabbana", "Paco Rabanne",
+    "Jean Paul Gaultier", "Thierry Mugler", "Lancôme", "Hermès", "Creed",
+    "Maison Margiela", "Viktor & Rolf", "Issey Miyake", "Burberry", "Other"
   ];
 
   // Filter products based on search term
@@ -304,14 +305,8 @@ export default function ManageProducts() {
     setEditName(prod.name);
     setEditPrice(prod.price);
     setEditNewPrice(prod.newprice || "");
-    setEditColors(prod.colors || []);
+    setEditBrand(prod.description || "");
     setEditPictures(prod.pictures || []);
-  };
-
-  const toggleColor = (color) => {
-    setEditColors((prev) =>
-      prev.includes(color) ? prev.filter((c) => c !== color) : [...prev, color]
-    );
   };
 
   const handleImageUpload = async (event) => {
@@ -455,7 +450,8 @@ export default function ManageProducts() {
           name: editName.trim(),
           price: Number(editPrice),
           newprice: editNewPrice ? Number(editNewPrice) : null,
-          colors: editColors,
+          description: editBrand,
+          colors: [], // Keep empty for compatibility
           pictures: editPictures
         }),
       });
@@ -466,12 +462,12 @@ export default function ManageProducts() {
       }
 
       setEditingProduct(null);
-      setMessage("Product updated successfully!");
+      setMessage("Fragrance updated successfully!");
       fetchProducts();
       setTimeout(() => setMessage(""), 3000);
     } catch (error) {
       console.error("Update error:", error);
-      setMessage("Error updating product: " + error.message);
+      setMessage("Error updating fragrance: " + error.message);
       setTimeout(() => setMessage(""), 5000);
     }
   };
@@ -497,7 +493,7 @@ export default function ManageProducts() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
       >
-        Manage Products
+        Manage Fragrances
       </motion.h1>
 
       {/* Search Bar */}
@@ -510,10 +506,10 @@ export default function ManageProducts() {
         <div className="relative">
           <motion.input
             type="text"
-            placeholder=" Search products by name..."
+            placeholder=" Search fragrances by name..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-4 py-3 pl-12 pr-12 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-fuchsia-600 transition-all duration-200"
+            className="w-full px-4 py-3 pl-12 pr-12 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-red-900 transition-all duration-200"
             variants={searchVariants}
             whileFocus="focus"
           />
@@ -524,7 +520,7 @@ export default function ManageProducts() {
             {searchTerm && (
               <motion.button
                 onClick={clearSearch}
-                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-red-500 transition-colors text-lg"
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-red-700 transition-colors text-lg"
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
@@ -548,8 +544,8 @@ export default function ManageProducts() {
               transition={{ duration: 0.3 }}
             >
               {filteredProducts.length === 0 
-                ? `No products found for "${searchTerm}"` 
-                : `Found ${filteredProducts.length} product${filteredProducts.length !== 1 ? 's' : ''} for "${searchTerm}"`
+                ? `No fragrances found for "${searchTerm}"` 
+                : `Found ${filteredProducts.length} fragrance${filteredProducts.length !== 1 ? 's' : ''} for "${searchTerm}"`
               }
             </motion.p>
           )}
@@ -583,11 +579,11 @@ export default function ManageProducts() {
           transition={{ duration: 0.4 }}
         >
           <motion.div
-            className="w-8 h-8 border-4 border-gray-300 border-t-purple-600 rounded-full mb-4"
+            className="w-8 h-8 border-4 border-gray-300 border-t-red-600 rounded-full mb-4"
             variants={loadingVariants}
             animate="animate"
           />
-          <p className="text-center">Loading products...</p>
+          <p className="text-center">Loading fragrances...</p>
         </motion.div>
       ) : filteredProducts.length === 0 ? (
         /* Empty State */
@@ -597,24 +593,24 @@ export default function ManageProducts() {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.4 }}
         >
-          <div className="text-6xl mb-4">📦</div>
+          <div className="text-6xl mb-4">🌸</div>
           <h3 className="text-xl font-semibold text-gray-600 mb-2">
-            {searchTerm ? 'No products found' : 'No products yet'}
+            {searchTerm ? 'No fragrances found' : 'No fragrances yet'}
           </h3>
           <p className="text-gray-500">
             {searchTerm 
-              ? `Try searching for something else or clear the search to see all products.` 
-              : 'Add your first product to get started!'
+              ? `Try searching for something else or clear the search to see all fragrances.` 
+              : 'Add your first fragrance to get started!'
             }
           </p>
           {searchTerm && (
             <motion.button
               onClick={clearSearch}
-              className="mt-4 px-4 py-2 bg-fuchsia-600 text-white rounded hover:bg-fuchsia-700 transition"
+              className="mt-4 px-4 py-2 bg-red-900 text-white rounded hover:bg-red-900 transition"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              Show All Products
+              Show All Fragrances
             </motion.button>
           )}
         </motion.div>
@@ -658,6 +654,18 @@ export default function ManageProducts() {
                 {prod.name}
               </motion.h2>
 
+              {/* Brand */}
+              {prod.description && (
+                <motion.p
+                  className="text-sm text-gray-500 text-center mb-2"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: index * 0.1 + 0.15 }}
+                >
+                  {prod.description}
+                </motion.p>
+              )}
+
               <motion.div
                 className="text-center mb-3"
                 initial={{ opacity: 0, y: 10 }}
@@ -665,7 +673,7 @@ export default function ManageProducts() {
                 transition={{ duration: 0.3, delay: index * 0.1 + 0.2 }}
               >
                 <p className="text-gray-600 font-medium">{prod.price} LE</p>
-                {prod.newprice && <p className="text-gray-500 font-medium">New: {prod.newprice} LE</p>}
+                {prod.newprice && <p className="text-gray-500 font-medium">Sale: {prod.newprice} LE</p>}
               </motion.div>
 
               <motion.div 
@@ -676,7 +684,7 @@ export default function ManageProducts() {
               >
                 <motion.button
                   onClick={() => openEditModal(prod)}
-                  className="px-3 py-1 bg-fuchsia-600 text-white rounded transition hover:bg-fuchsia-700"
+                  className="px-3 py-1 bg-red-900 text-white rounded transition hover:bg-red-900"
                   variants={buttonVariants}
                   initial="idle"
                   whileHover="hover"
@@ -726,7 +734,7 @@ export default function ManageProducts() {
                 transition={{ duration: 0.3 }}
               >
                 <div className="text-6xl mb-4">⚠️</div>
-                <h3 className="text-xl font-bold text-gray-800 mb-2">Delete Product?</h3>
+                <h3 className="text-xl font-bold text-gray-800 mb-2">Delete Fragrance?</h3>
                 <p className="text-gray-600 mb-2">
                   Are you sure you want to delete
                 </p>
@@ -806,15 +814,15 @@ export default function ManageProducts() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                Edit Product
+                Edit Fragrance
               </motion.h2>
 
               <motion.input
                 type="text"
                 value={editName}
                 onChange={(e) => setEditName(e.target.value)}
-                placeholder="Product Name *"
-                className="w-full mb-3 p-3 border rounded-lg focus:outline-none focus:border-fuchsia-600"
+                placeholder="Fragrance Name *"
+                className="w-full mb-3 p-3 border rounded-lg focus:outline-none focus:border-red-900"
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3, delay: 0.1 }}
@@ -825,7 +833,7 @@ export default function ManageProducts() {
                 value={editPrice}
                 onChange={(e) => setEditPrice(e.target.value)}
                 placeholder="Price *"
-                className="w-full mb-3 p-3 border rounded-lg focus:outline-none focus:border-fuchsia-600"
+                className="w-full mb-3 p-3 border rounded-lg focus:outline-none focus:border-red-900"
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3, delay: 0.2 }}
@@ -835,42 +843,31 @@ export default function ManageProducts() {
                 type="number"
                 value={editNewPrice}
                 onChange={(e) => setEditNewPrice(e.target.value)}
-                placeholder="New Price (Optional)"
-                className="w-full mb-4 p-3 border rounded-lg focus:outline-none focus:border-fuchsia-600"
+                placeholder="Sale Price (Optional)"
+                className="w-full mb-4 p-3 border rounded-lg focus:outline-none focus:border-red-900"
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3, delay: 0.3 }}
               />
 
-              {/* Colors */}
+              {/* Brand */}
               <motion.div 
                 className="mb-4"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: 0.4 }}
               >
-                <h3 className="text-sm font-semibold mb-2">Colors:</h3>
-                <div className="flex flex-wrap gap-2">
-                  {colorOptions.map((color, idx) => (
-                    <motion.button
-                      key={color}
-                      type="button"
-                      onClick={() => toggleColor(color)}
-                      className={`px-3 py-1 rounded border text-sm transition ${
-                        editColors.includes(color) 
-                          ? "bg-fuchsia-600 text-white border-fuchsia-600" 
-                          : "bg-white text-gray-700 border-gray-300 hover:border-fuchsia-600"
-                      }`}
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: 0.2, delay: idx * 0.02 }}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      {color}
-                    </motion.button>
+                <h3 className="text-sm font-semibold mb-2">Brand:</h3>
+                <select
+                  value={editBrand}
+                  onChange={(e) => setEditBrand(e.target.value)}
+                  className="w-full p-3 border rounded-lg focus:outline-none focus:border-red-900"
+                >
+                  <option value="">Select Brand</option>
+                  {brandOptions.map((brand) => (
+                    <option key={brand} value={brand}>{brand}</option>
                   ))}
-                </div>
+                </select>
               </motion.div>
 
               {/* Images */}
@@ -906,7 +903,7 @@ export default function ManageProducts() {
                 )}
 
                 {/* Upload New Images */}
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-fuchsia-600 transition">
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-red-900 transition">
                   <input
                     type="file"
                     accept="image/*"
@@ -918,14 +915,14 @@ export default function ManageProducts() {
                   />
                   <label 
                     htmlFor="image-upload" 
-                    className={`cursor-pointer text-fuchsia-600 hover:text-fuchsia-700 font-medium ${
+                    className={`cursor-pointer text-red-900 hover:text-red-900 font-medium ${
                       uploadingImages ? 'opacity-50 cursor-not-allowed' : ''
                     }`}
                   >
                     {uploadingImages ? (
                       <span className="flex items-center justify-center gap-2">
                         <motion.div
-                          className="w-4 h-4 border-2 border-fuchsia-600 border-t-transparent rounded-full"
+                          className="w-4 h-4 border-2 border-red-900 border-t-transparent rounded-full"
                           variants={loadingVariants}
                           animate="animate"
                         />

@@ -12,7 +12,6 @@ export default function ProductDetailClient({ productId }) {
   const { addToCart } = useMyContext()
   const [product, setProduct] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [selectedColor, setSelectedColor] = useState("")
   const [selectedSize, setSelectedSize] = useState("")
   const [selectedImage, setSelectedImage] = useState("")
   const [added, setAdded] = useState(false)
@@ -32,7 +31,6 @@ export default function ProductDetailClient({ productId }) {
       }
 
       setProduct(data)
-      setSelectedColor(data.colors?.[0] || "")
       setSelectedSize(data.sizes?.[0] || "")
       setSelectedImage(data.pictures?.[0] || "")
       setLoading(false)
@@ -64,7 +62,7 @@ export default function ProductDetailClient({ productId }) {
 
   const handleAddToCart = () => {
     if (!selectedSize) {
-      toast.error("⚠️ Please select a size first!", {
+      toast.error("Please select a size first!", {
         duration: 3000,
         style: {
           background: '#EF4444',
@@ -75,10 +73,10 @@ export default function ProductDetailClient({ productId }) {
     }
 
     try {
-      addToCart({ ...product, selectedColor, selectedSize })
+      addToCart({ ...product, selectedSize })
       setAdded(true)
       
-      toast.success(`🛒 ${product.name} added to cart!`, {
+      toast.success(`${product.name} added to cart!`, {
         duration: 2000,
         style: {
           background: '#10B981',
@@ -99,8 +97,8 @@ export default function ProductDetailClient({ productId }) {
         animate={{ opacity: 1 }}
         className="flex justify-center items-center min-h-screen"
       >
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div>
-        <span className="ml-3 text-gray-600">Loading product...</span>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-600"></div>
+        <span className="ml-3 text-gray-600">Loading fragrance...</span>
       </motion.div>
     )
   }
@@ -112,9 +110,9 @@ export default function ProductDetailClient({ productId }) {
         animate={{ opacity: 1 }}
         className="p-10 text-center"
       >
-        <div className="text-4xl mb-4">😢</div>
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">Product not found</h2>
-        <p className="text-gray-600">The product you're looking for doesn't exist.</p>
+        <div className="text-4xl mb-4">🌸</div>
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">Fragrance not found</h2>
+        <p className="text-gray-600">The fragrance you're looking for doesn't exist.</p>
       </motion.div>
     )
   }
@@ -146,7 +144,7 @@ export default function ProductDetailClient({ productId }) {
           className="p-6 flex flex-col lg:flex-row gap-8 bg-white rounded-2xl shadow-sm"
           variants={itemVariants}
         >
-          {/* صور المنتج */}
+          {/* Product Images */}
           <motion.div 
             className="flex flex-col-reverse lg:w-1/2"
             variants={itemVariants}
@@ -161,7 +159,7 @@ export default function ProductDetailClient({ productId }) {
                   key={idx}
                   onClick={() => setSelectedImage(img)}
                   className={`cursor-pointer flex-shrink-0 rounded-lg overflow-hidden border-2 transition-all ${
-                    selectedImage === img ? 'border-black' : 'border-gray-200 hover:border-gray-400'
+                    selectedImage === img ? 'border-gray-800' : 'border-gray-200 hover:border-gray-400'
                   }`}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -200,17 +198,32 @@ export default function ProductDetailClient({ productId }) {
             </AnimatePresence>
           </motion.div>
 
-          {/* تفاصيل المنتج */}
+          {/* Product Details */}
           <motion.div 
             className="flex flex-col gap-6 lg:w-1/2"
             variants={itemVariants}
           >
             <motion.div variants={itemVariants}>
               <h1 className="text-3xl font-bold text-gray-900 mb-3">{product.name}</h1>
-              <p className="text-gray-600 text-lg leading-relaxed">{product.description}</p>
+              
+              {/* Brand */}
+              {product.description && (
+                <div className="mb-4">
+                  <span className="text-sm font-medium text-gray-500 uppercase tracking-wide">Brand</span>
+                  <p className="text-lg font-medium text-gray-800">{product.description}</p>
+                </div>
+              )}
+
+              {/* Category */}
+              {product.type && (
+                <div className="mb-4">
+                  <span className="text-sm font-medium text-gray-500 uppercase tracking-wide">Category</span>
+                  <p className="text-lg font-medium text-gray-800 capitalize">{product.type}</p>
+                </div>
+              )}
             </motion.div>
 
-            {/* السعر */}
+            {/* Price */}
             <motion.div 
               className="flex items-center gap-4"
               variants={itemVariants}
@@ -234,53 +247,13 @@ export default function ProductDetailClient({ productId }) {
               )}
             </motion.div>
 
-            {/* ألوان */}
-            {product.colors && product.colors.length > 0 && (
-              <motion.div variants={itemVariants}>
-                <h3 className="text-sm font-semibold text-gray-900 mb-3 uppercase tracking-wide">
-                  Color: {selectedColor}
-                </h3>
-                <div className="flex gap-3">
-                  {product.colors.map((color, idx) => {
-                    const isSelected = selectedColor === color
-                    return (
-                      <motion.button
-                        key={idx}
-                        onClick={() => {
-                          setSelectedColor(color)
-                          setSelectedImage(
-                            product.pictures?.[idx] || product.pictures?.[0]
-                          )
-                        }}
-                        className={`w-6 h-6 rounded-full border-2 transition-all ${
-                          isSelected ? "border-black scale-110" : "border-gray-300 hover:border-gray-400"
-                        }`}
-                        style={{ backgroundColor: color }}
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                      >
-                        {isSelected && (
-                          <motion.div
-                            className="w-full h-full rounded-full border-2 border-white"
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            transition={{ duration: 0.2 }}
-                          />
-                        )}
-                      </motion.button>
-                    )
-                  })}
-                </div>
-              </motion.div>
-            )}
-
-            {/* مقاسات */}
+            {/* Sizes */}
             <motion.div variants={itemVariants}>
               <h3 className="text-sm font-semibold text-gray-900 mb-3 uppercase tracking-wide">
                 Size: {selectedSize || "Please select"}
               </h3>
               <div className="flex gap-3">
-                {["S", "M", "L", "XL"].map((size) => {
+                {["50ml", "100ml", "150ml", "200ml", "250ml"].map((size) => {
                   const isAvailable = product.sizes?.includes(size)
                   const isSelected = selectedSize === size
                   return (
@@ -288,9 +261,9 @@ export default function ProductDetailClient({ productId }) {
                       key={size}
                       onClick={() => isAvailable && setSelectedSize(size)}
                       disabled={!isAvailable}
-                      className={`w-12 h-12 rounded-lg border-2 font-semibold transition-all ${
+                      className={`px-4 py-3 rounded-lg border-2 font-semibold transition-all ${
                         isSelected 
-                          ? "border-black bg-black text-white" 
+                          ? "border-gray-800 bg-gray-800 text-white" 
                           : isAvailable 
                             ? "border-gray-300 bg-white text-gray-900 hover:border-gray-400" 
                             : "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed"
@@ -305,14 +278,14 @@ export default function ProductDetailClient({ productId }) {
               </div>
             </motion.div>
 
-            {/* زرار إضافة للعربة */}
+            {/* Add to Cart Button */}
             <motion.div className="space-y-4" variants={itemVariants}>
               <motion.button
                 onClick={handleAddToCart}
                 className={`w-full py-4 px-6 rounded-xl font-semibold text-lg transition-all duration-300 ${
                   added
-                    ? "bg text-white"
-                    : "bg text-white hover:bg-gray-800"
+                    ? "bg-green-600 text-white"
+                    : "bg-gray-900 text-white hover:bg-gray-800"
                 }`}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
@@ -338,29 +311,50 @@ export default function ProductDetailClient({ productId }) {
                       exit={{ opacity: 0, y: -10 }}
                       className="flex items-center justify-center gap-2"
                     >
-
                       <span>Add to Cart</span>
                     </motion.div>
                   )}
                 </AnimatePresence>
               </motion.button>
 
-              {/* معلومات إضافية */}
+              {/* Additional Information */}
               <motion.div 
                 className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-gray-100"
                 variants={itemVariants}
               >
                 <div className="flex items-center gap-3 text-sm text-gray-600">
-                  <span className="bgg">🚚</span>
+                  <span className="text-lg">🚚</span>
                   <span>Free shipping over 2000 LE</span>
                 </div>
                 <div className="flex items-center gap-3 text-sm text-gray-600">
-                  <span className="bgg">🔄</span>
+                  <span className="text-lg">🔄</span>
                   <span>30-day returns</span>
                 </div>
                 <div className="flex items-center gap-3 text-sm text-gray-600">
-                  <span className="bgg">⭐</span>
+                  <span className="text-lg">⭐</span>
                   <span>Authentic guarantee</span>
+                </div>
+              </motion.div>
+
+              {/* Fragrance Notes */}
+              <motion.div 
+                className="bg-gray-50 rounded-lg p-4 mt-6"
+                variants={itemVariants}
+              >
+                <h4 className="font-semibold text-gray-900 mb-3">Fragrance Profile</h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                  <div>
+                    <span className="font-medium text-gray-700">Top Notes</span>
+                    <p className="text-gray-600">Fresh & Citrusy</p>
+                  </div>
+                  <div>
+                    <span className="font-medium text-gray-700">Heart Notes</span>
+                    <p className="text-gray-600">Floral & Elegant</p>
+                  </div>
+                  <div>
+                    <span className="font-medium text-gray-700">Base Notes</span>
+                    <p className="text-gray-600">Warm & Lasting</p>
+                  </div>
                 </div>
               </motion.div>
             </motion.div>

@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  --background: #e6e6e6;
+  --background: white;
   --foreground: #000000;
 }
 
@@ -14,45 +14,84 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #e6e6e6;
+    --background: white;
     --foreground: #000000;
   }
 }
+
 html, body {
   height: 100%;
   scroll-behavior: smooth;
 }
+
 html {
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch; /* Safari fix */
 }
 
-
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Poppins', sans-serif;
 }
 
 .bg{
-  background-color: #b09dc1da;
+  background-color: #591112;
 }
+
 .bgg{
-  color: #b09dc1;
+  color: #591112;
 }
 
 .nava {
-background: #B09DC1;
-background: linear-gradient(270deg, rgba(176, 157, 193, 1) 32%, rgba(255, 255, 255, 0.84) 71%);
+  background: #B09DC1;
+  background: linear-gradient(270deg, rgba(176, 157, 193, 1) 32%, rgba(255, 255, 255, 0.84) 71%);
 }
 
-.swiper-button-next,
-.swiper-button-prev {
+.swiper-button-next, .swiper-button-prev {
   color: black;
   background: white;
   padding: 10px;
   border-radius: 100%;
 }
-body {
-  font-family: 'Poppins', sans-serif;
+
+/* Simple product card styles */
+.product-card {
+  background: white;
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.product-card:hover {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.product-image {
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+/* Category cards - simple style */
+.category-card {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border: 1px solid #dee2e6;
+  border-radius: 16px;
+  transition: all 0.3s ease;
+}
+
+.category-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.category-card.men {
+  background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+  color: white;
+}
+
+.category-card.women {
+  background: linear-gradient(135deg, #ed64a6 0%, #d53f8c 100%);
+  color: white;
 }

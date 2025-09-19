@@ -38,8 +38,8 @@ export default function Navbar() {
             <Image
               src={scrolled ? "/darklogo.png" : "/whitelogo.png"}
               alt="Logo"
-              width={60}
-              height={60}
+              width={40}
+              height={40}
               className="object-contain"
             />
           </motion.div>
@@ -102,13 +102,13 @@ export default function Navbar() {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.8 }}
         style={{ backgroundImage: "url('/bg.png')" }}
-        className="w-full min-h-screen bg-cover bg-center bg-no-repeat flex items-center md:items-start justify-center md:justify-end"
+        className="w-full h-60 bg-cover bg-center bg-no-repeat flex items-center md:items-start justify-center md:justify-end"
       >
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.3 }}
-          className="w-full min-h-screen bg-black/60 flex flex-col items-start justify-start text-center p-4"
+          className="w-full h-60 bg-black/60 flex flex-col items-start justify-start text-center p-4"
         >
           <motion.h2
             initial={{ opacity: 0, x: -50 }}
@@ -116,7 +116,7 @@ export default function Navbar() {
             transition={{ duration: 0.6, delay: 0.5 }}
             className="font-bold text-5xl md:text-6xl text-white"
           >
-            <span className="text-blue-600"></span>
+            <span className="text-red-800"></span>
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, x: -30 }}
