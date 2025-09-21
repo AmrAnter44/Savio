@@ -60,7 +60,7 @@ export default function Page() {
       variants={containerVariants}
     >
       <motion.div variants={iconVariants}>
-        <FaCheckCircle className="text-green-500 text-6xl mb-4" />
+        <FaCheckCircle className="text text-6xl mb-4" />
       </motion.div>
       
       <motion.h1 variants={textVariants}>

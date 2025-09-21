@@ -156,15 +156,25 @@ export default function Cart() {
                       ease: "easeOut"
                     }}
                   >
-                    <div>
-                      <Image
-                        src={imgSrc}
-                        alt={`Product image ${index}`}
-                        className="w-50 object-cover mb-4 rounded"
-                        width={100}
-                        height={400}
-                      />
-                    </div>
+<motion.div
+  initial={{ opacity: 0, x: -20 }}
+  animate={{ opacity: 1, x: 0 }}
+  transition={{ 
+    duration: 0.4, 
+    delay: index * 0.1,
+    ease: "easeOut"
+  }}
+>
+  <div>
+    <img
+      src={imgSrc}
+      alt={`Product image ${index}`}
+      className="w-50 object-cover mb-4 rounded"
+      width={100}
+      height={400}
+    />
+  </div>
+</motion.div>
                   </motion.div>
 
                   <motion.div 

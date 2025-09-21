@@ -285,7 +285,7 @@ export default function StorePage() {
               <p className="text">Limited time offers on selected fragrances</p>
             </motion.div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
               {saleProducts.slice(0, 4).map((product, index) => (
                 <motion.div
                   key={`sale-${product.id}`}
@@ -304,7 +304,7 @@ export default function StorePage() {
                       </div>
 
                       {/* Image Container */}
-                      <div className="relative overflow-hidden h-96">
+                      <div className="relative overflow-hidden h-60 lg:h-96">
                         <Image
                           src={
                             hoveredId === `sale-${product.id}`
@@ -429,7 +429,7 @@ export default function StorePage() {
                     <span className="text-sm font-medium text-gray-700">Filtering by:</span>
                     <span className="bg text-white px-3 py-1 rounded-full text-sm font-medium">
                       {categories.find(c => c.key === typeFilter)?.name}
-                      {typeFilter === "Box" && " (Master)"}
+                      {typeFilter === "Box" && ""}
                     </span>
                   </div>
                   <button
@@ -559,7 +559,7 @@ export default function StorePage() {
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-6"
           >
             {filteredProducts.map((product, index) => (
               <motion.div
@@ -572,7 +572,7 @@ export default function StorePage() {
                 <Link href={`/product/${product.id}`} className="block">
                   <div className="group bgunded-xl overflow-hidden  hover: transition-all duration-300 cursor-pointer">
                     {/* Image Container */}
-                    <div className="relative overflow-hidden h-96">
+                    <div className="relative overflow-hidden h-60 md:h-72 lg:h-96 ">
                       <Image
                         src={
                           hoveredId === product.id
