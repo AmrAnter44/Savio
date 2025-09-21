@@ -365,14 +365,7 @@ export default function ProductDetailClient({ productId }) {
           <RelatedProducts currentProduct={product} />
         </motion.div>
       </motion.div>
-           <div className="absolute md:min-h-[2300px] bg-auto bg-no-repeat opacity-10 -right-8  inset-0 -z-10">
-        <Image
-          src="/bg3.png"
-          alt="خلفية"
-          fill
-          className="object-cover"
-          priority
-        />  </div>
+
     </>
   )
 }
