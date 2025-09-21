@@ -1069,7 +1069,7 @@ export default function ManageProducts() {
                     {uploadingImages ? (
                       <span className="flex items-center justify-center gap-2">
                         <motion.div
-                          className="w-4 h-4 border-2 border  border-t-transparent rounded-full"
+                          className="w-4 h-4   border-t-transparent rounded-full"
                           variants={loadingVariants}
                           animate="animate"
                         />

@@ -217,7 +217,7 @@ export default function AddProduct() {
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring focus:border-transparent"
+            className="w-full p-3 border border-gray-300 rounded-md  focus:border-transparent"
             placeholder="Enter fragrance name"
             required
           />
@@ -230,7 +230,7 @@ export default function AddProduct() {
             type="number"
             value={price}
             onChange={(e) => setPrice(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring focus:border-transparent"
+            className="w-full p-3 border border-gray-300 rounded-md  focus:border-transparent"
             placeholder="Enter price"
             required
           />
@@ -243,7 +243,7 @@ export default function AddProduct() {
             type="number"
             value={newprice}
             onChange={(e) => setNewprice(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring focus:border-transparent"
+            className="w-full p-3 border border-gray-300 rounded-md  focus:border-transparent"
             placeholder="Enter sale price"
           />
         </div>
@@ -254,7 +254,7 @@ export default function AddProduct() {
           <select
             value={brand}
             onChange={(e) => setBrand(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring focus:border-transparent"
+            className="w-full p-3 border border-gray-300 rounded-md  focus:border-transparent"
             required
           >
             <option value="">Select Brand</option>
