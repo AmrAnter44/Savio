@@ -181,6 +181,8 @@ export default function ManageProducts() {
   const [editNewPrice, setEditNewPrice] = useState("");
   const [editBrand, setEditBrand] = useState("");
   const [editPictures, setEditPictures] = useState([]);
+  const [editSizes, setEditSizes] = useState([]);
+  const [editType, setEditType] = useState("");
   const [uploadingImages, setUploadingImages] = useState(false);
 
   // Confirmation modal state
@@ -194,6 +196,9 @@ export default function ManageProducts() {
     "Jean Paul Gaultier", "Thierry Mugler", "Lancôme", "Hermès", "Creed",
     "Maison Margiela", "Viktor & Rolf", "Issey Miyake", "Burberry", "Other"
   ];
+
+  const sizeOptions = ["50ml", "100ml", "150ml", "200ml", "250ml"];
+  const typeOptions = ["men", "women"];
 
   // Filter products based on search term
   const filteredProducts = useMemo(() => {
@@ -305,8 +310,50 @@ export default function ManageProducts() {
     setEditName(prod.name);
     setEditPrice(prod.price);
     setEditNewPrice(prod.newprice || "");
-    setEditBrand(prod.description || "");
+    setEditBrand(prod.brand || "");
     setEditPictures(prod.pictures || []);
+    setEditSizes(prod.sizes || []);
+    setEditType(prod.type || "");
+  };
+
+  const handleSizeChange = (size) => {
+    if (editSizes.includes(size)) {
+      setEditSizes(editSizes.filter(s => s !== size));
+    } else {
+      setEditSizes([...editSizes, size]);
+    }
+  };
+
+  // Image resize function
+  const resizeImage = (file, targetWidth = 768, targetHeight = 950) => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      const reader = new FileReader();
+
+      reader.onload = (e) => { 
+        img.src = e.target.result; 
+      };
+
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        
+        canvas.width = targetWidth;
+        canvas.height = targetHeight;
+        
+        ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+        
+        canvas.toBlob((blob) => {
+          const resizedFile = new File([blob], file.name, { 
+            type: file.type,
+            lastModified: Date.now()
+          });
+          resolve(resizedFile);
+        }, file.type, 0.8); // 0.8 quality for better compression
+      };
+
+      reader.readAsDataURL(file);
+    });
   };
 
   const handleImageUpload = async (event) => {
@@ -314,9 +361,13 @@ export default function ManageProducts() {
     if (files.length === 0) return;
 
     setUploadingImages(true);
-    const uploadedUrls = [];
-
+    setMessage("Processing images...");
+    
     try {
+      const processedFiles = [];
+      const uploadedUrls = [];
+
+      // First, resize all images
       for (const file of files) {
         if (!file.type.startsWith('image/')) {
           console.warn(`Skipping non-image file: ${file.name}`);
@@ -330,6 +381,21 @@ export default function ManageProducts() {
           continue;
         }
 
+        // Resize the image
+        const resizedFile = await resizeImage(file);
+        processedFiles.push(resizedFile);
+      }
+
+      if (processedFiles.length === 0) {
+        setMessage("No valid images to process");
+        setUploadingImages(false);
+        return;
+      }
+
+      setMessage("Uploading images...");
+
+      // Now upload the resized images
+      for (const file of processedFiles) {
         const fileExt = file.name.split('.').pop();
         const fileName = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
         
@@ -382,7 +448,7 @@ export default function ManageProducts() {
         setEditPictures(prev => [...prev, ...uploadedUrls]);
         setMessage(`✅ Successfully uploaded ${uploadedUrls.length} image(s)`);
         setTimeout(() => setMessage(""), 3000);
-      } else if (uploadedUrls.length === 0 && files.length > 0) {
+      } else if (uploadedUrls.length === 0 && processedFiles.length > 0) {
         if (!message.includes('Bucket not found') && !message.includes('RLS Policy') && !message.includes('Permission denied')) {
           setMessage("❌ No images were uploaded successfully");
           setTimeout(() => setMessage(""), 3000);
@@ -440,6 +506,18 @@ export default function ManageProducts() {
       return;
     }
 
+    if (editSizes.length === 0) {
+      setMessage("Please select at least one size!");
+      setTimeout(() => setMessage(""), 3000);
+      return;
+    }
+
+    if (!editType) {
+      setMessage("Please select a category (men/women)!");
+      setTimeout(() => setMessage(""), 3000);
+      return;
+    }
+
     try {
       const res = await fetch(`/api/products/${editingProduct.id}`, {
         method: "PUT",
@@ -450,9 +528,10 @@ export default function ManageProducts() {
           name: editName.trim(),
           price: Number(editPrice),
           newprice: editNewPrice ? Number(editNewPrice) : null,
-          description: editBrand,
-          colors: [], // Keep empty for compatibility
-          pictures: editPictures
+          brand: editBrand,
+          pictures: editPictures,
+          sizes: editSizes,
+          type: editType
         }),
       });
 
@@ -509,7 +588,7 @@ export default function ManageProducts() {
             placeholder=" Search fragrances by name..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-4 py-3 pl-12 pr-12 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-red-900 transition-all duration-200"
+            className="w-full px-4 py-3 pl-12 pr-12 border-2 border-gray-300 rounded-lg focus:outline-none focus:border  transition-all duration-200"
             variants={searchVariants}
             whileFocus="focus"
           />
@@ -557,7 +636,7 @@ export default function ManageProducts() {
         {message && (
           <motion.p 
             className={`text-center mb-4 p-3 rounded ${
-              message.includes("successfully") ? "text-green-600 bg-green-50" : "text-red-600 bg-red-50"
+              message.includes("successfully") ? "text-green-600 bg-green-50" : "text bg-red-50"
             }`}
             variants={messageVariants}
             initial="hidden"
@@ -606,7 +685,7 @@ export default function ManageProducts() {
           {searchTerm && (
             <motion.button
               onClick={clearSearch}
-              className="mt-4 px-4 py-2 bg-red-900 text-white rounded hover:bg-red-900 transition"
+              className="mt-4 px-4 py-2 bg text-white rounded hover:bg transition"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -655,16 +734,32 @@ export default function ManageProducts() {
               </motion.h2>
 
               {/* Brand */}
-              {prod.description && (
+              {prod.brand && (
                 <motion.p
                   className="text-sm text-gray-500 text-center mb-2"
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, delay: index * 0.1 + 0.15 }}
                 >
-                  {prod.description}
+                  {prod.brand}
                 </motion.p>
               )}
+
+              {/* Category & Sizes */}
+              <motion.div
+                className="text-xs text-gray-400 text-center mb-2"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.1 + 0.17 }}
+              >
+                {prod.type && <span className="capitalize">{prod.type}</span>}
+                {prod.sizes && prod.sizes.length > 0 && (
+                  <>
+                    {prod.type && " • "}
+                    {prod.sizes.join(", ")}
+                  </>
+                )}
+              </motion.div>
 
               <motion.div
                 className="text-center mb-3"
@@ -684,7 +779,7 @@ export default function ManageProducts() {
               >
                 <motion.button
                   onClick={() => openEditModal(prod)}
-                  className="px-3 py-1 bg-red-900 text-white rounded transition hover:bg-red-900"
+                  className="px-3 py-1 bg  text-white rounded transition hover:bg "
                   variants={buttonVariants}
                   initial="idle"
                   whileHover="hover"
@@ -739,7 +834,7 @@ export default function ManageProducts() {
                   Are you sure you want to delete
                 </p>
                 <p className="font-semibold text-gray-800">"{productToDelete.name}"?</p>
-                <p className="text-sm text-red-500 mt-2">
+                <p className="text-sm text mt-2">
                   This action cannot be undone!
                 </p>
               </motion.div>
@@ -822,7 +917,7 @@ export default function ManageProducts() {
                 value={editName}
                 onChange={(e) => setEditName(e.target.value)}
                 placeholder="Fragrance Name *"
-                className="w-full mb-3 p-3 border rounded-lg focus:outline-none focus:border-red-900"
+                className="w-full mb-3 p-3 border rounded-lg focus:outline-none focus:border "
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3, delay: 0.1 }}
@@ -833,7 +928,7 @@ export default function ManageProducts() {
                 value={editPrice}
                 onChange={(e) => setEditPrice(e.target.value)}
                 placeholder="Price *"
-                className="w-full mb-3 p-3 border rounded-lg focus:outline-none focus:border-red-900"
+                className="w-full mb-3 p-3 border rounded-lg focus:outline-none focus:border "
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3, delay: 0.2 }}
@@ -844,7 +939,7 @@ export default function ManageProducts() {
                 value={editNewPrice}
                 onChange={(e) => setEditNewPrice(e.target.value)}
                 placeholder="Sale Price (Optional)"
-                className="w-full mb-4 p-3 border rounded-lg focus:outline-none focus:border-red-900"
+                className="w-full mb-4 p-3 border rounded-lg focus:outline-none focus:border "
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3, delay: 0.3 }}
@@ -861,7 +956,7 @@ export default function ManageProducts() {
                 <select
                   value={editBrand}
                   onChange={(e) => setEditBrand(e.target.value)}
-                  className="w-full p-3 border rounded-lg focus:outline-none focus:border-red-900"
+                  className="w-full p-3 border rounded-lg focus:outline-none focus:border "
                 >
                   <option value="">Select Brand</option>
                   {brandOptions.map((brand) => (
@@ -870,12 +965,64 @@ export default function ManageProducts() {
                 </select>
               </motion.div>
 
+              {/* Category/Type */}
+              <motion.div 
+                className="mb-4"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: 0.45 }}
+              >
+                <h3 className="text-sm font-semibold mb-2">Category *</h3>
+                <div className="flex gap-3">
+                  {typeOptions.map(option => (
+                    <button
+                      key={option}
+                      type="button"
+                      onClick={() => setEditType(option)}
+                      className={`px-4 py-2 rounded-md capitalize transition-colors ${
+                        editType === option 
+                          ? 'bg  text-white' 
+                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                      }`}
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
+              </motion.div>
+
+              {/* Sizes */}
+              <motion.div 
+                className="mb-4"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: 0.5 }}
+              >
+                <h3 className="text-sm font-semibold mb-2">Sizes *</h3>
+                <div className="flex flex-wrap gap-2">
+                  {sizeOptions.map(size => (
+                    <button
+                      key={size}
+                      type="button"
+                      onClick={() => handleSizeChange(size)}
+                      className={`px-3 py-2 rounded-md text-sm transition-colors ${
+                        editSizes.includes(size)
+                          ? 'bg  text-white'
+                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                      }`}
+                    >
+                      {size}
+                    </button>
+                  ))}
+                </div>
+              </motion.div>
+
               {/* Images */}
               <motion.div 
                 className="mb-6"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: 0.5 }}
+                transition={{ duration: 0.3, delay: 0.55 }}
               >
                 <h3 className="text-sm font-semibold mb-3">Images:</h3>
                 
@@ -893,7 +1040,7 @@ export default function ManageProducts() {
                         />
                         <button
                           onClick={() => removeImage(idx)}
-                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 transition"
+                          className="absolute -top-2 -right-2 bg text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 transition"
                         >
                           ×
                         </button>
@@ -903,7 +1050,7 @@ export default function ManageProducts() {
                 )}
 
                 {/* Upload New Images */}
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-red-900 transition">
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border  transition">
                   <input
                     type="file"
                     accept="image/*"
@@ -915,14 +1062,14 @@ export default function ManageProducts() {
                   />
                   <label 
                     htmlFor="image-upload" 
-                    className={`cursor-pointer text-red-900 hover:text-red-900 font-medium ${
+                    className={`cursor-pointer text  hover:text  font-medium ${
                       uploadingImages ? 'opacity-50 cursor-not-allowed' : ''
                     }`}
                   >
                     {uploadingImages ? (
                       <span className="flex items-center justify-center gap-2">
                         <motion.div
-                          className="w-4 h-4 border-2 border-red-900 border-t-transparent rounded-full"
+                          className="w-4 h-4 border-2 border  border-t-transparent rounded-full"
                           variants={loadingVariants}
                           animate="animate"
                         />
@@ -933,7 +1080,8 @@ export default function ManageProducts() {
                     )}
                   </label>
                   <p className="text-xs text-gray-500 mt-2">
-                    Click to select multiple images (Max 5MB each)
+                    Click to select multiple images (Max 5MB each)<br/>
+                    Images will be resized to 768x950px automatically
                   </p>
                 </div>
               </motion.div>
@@ -957,7 +1105,7 @@ export default function ManageProducts() {
                 </motion.button>
                 <motion.button
                   onClick={handleSaveEdit}
-                  className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition disabled:opacity-50"
+                  className="px-4 py-2 bg text-white rounded hover:bg transition disabled:opacity-50"
                   variants={buttonVariants}
                   initial="idle"
                   whileHover="hover"

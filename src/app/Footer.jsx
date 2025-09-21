@@ -48,15 +48,15 @@ export default function Footer() {
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, margin: "-100px" }}
-      className="bg text-white p-6 mt-10"
+      className="bg text-white p-6 mt-10 bottom-0 w-full"
     >
       <div className="container mx-auto flex flex-col md:flex-row items-center justify-between">
         
         <motion.div 
           variants={itemVariants}
-          className="text-lg font-semibold mb-4 md:mb-0"
+          className="text-lg font-semibold"
         >
-          © {new Date().getFullYear()} Wn store
+          © {new Date().getFullYear()} Savio Fragrance
         </motion.div>
 
         <motion.div 

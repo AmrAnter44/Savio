@@ -7,7 +7,7 @@ import { Analytics } from "@vercel/analytics/react"
 const outfit = Outfit({ subsets: ["latin"], weight: ["400","500","600","700","800","900"] });
 
 export const metadata = {
-  title: "Wn Store",
+  title: "Savio Fragrances",
   description: "Shop the latest collection of elegant dresses – evening gowns, casual styles & chic outfits. High-quality fabrics, affordable prices & fast delivery.",
   icons: { icon: "/favicon.ico" },
 };

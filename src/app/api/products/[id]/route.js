@@ -37,16 +37,35 @@ export async function PUT(req, { params }) {
     
     console.log("Updating product:", id, body);
 
+    // Validate required fields
+    if (!body.name || !body.price) {
+      return NextResponse.json(
+        { error: "Name and price are required" }, 
+        { status: 400 }
+      );
+    }
+
     // Update product in database
+    const updateData = {
+      name: body.name.trim(),
+      price: Number(body.price),
+      pictures: body.pictures || []
+    };
+
+    // Only add newprice if it exists and has a value
+    if (body.newprice) {
+      updateData.newprice = Number(body.newprice);
+    }
+
+    // Add brand if provided (adjust column name based on what you created)
+    if (body.brand) {
+      updateData.brand = body.brand;  // Use this if you created 'brand' column
+      // updateData.description = body.brand;  // Use this if you created 'description' column
+    }
+
     const { data, error } = await supabaseServer()
       .from("products")
-      .update({
-        name: body.name,
-        price: body.price,
-        newprice: body.newprice || null,
-        colors: body.colors || [],
-        pictures: body.pictures || [] // تحديث الصور
-      })
+      .update(updateData)
       .eq("id", id)
       .select()
       .single();
@@ -56,6 +75,13 @@ export async function PUT(req, { params }) {
       return NextResponse.json(
         { error: "Failed to update product: " + error.message }, 
         { status: 500 }
+      );
+    }
+
+    if (!data) {
+      return NextResponse.json(
+        { error: "Product not found" }, 
+        { status: 404 }
       );
     }
 

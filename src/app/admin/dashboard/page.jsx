@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
-import AddProduct from "../add/page";
-import RemoveProduct from "../remove/page";
+import AddProduct from "../add";
+import RemoveProduct from "../remove";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function AdminDashboard() {
@@ -42,13 +42,13 @@ export default function AdminDashboard() {
       {/* Tabs للتبديل بين Add و Remove */}
       <div className="flex gap-4 mb-6 mx-auto justify-center items-center">
         <button
-          className={`px-4 py-2 rounded ${activeTab === "add" ? "bg-red-900 text-white" : "bg-gray-200"}`}
+          className={`px-4 py-2 rounded ${activeTab === "add" ? "bg text-white" : "bg-gray-200"}`}
           onClick={() => setActiveTab("add")}
         >
           Add Product
         </button>
         <button
-          className={`px-4 py-2 rounded ${activeTab === "remove" ? "bg-red-900 text-white" : "bg-gray-200"}`}
+          className={`px-4 py-2 rounded ${activeTab === "remove" ? "bg text-white" : "bg-gray-200"}`}
           onClick={() => setActiveTab("remove")}
         >
           Remove Product

@@ -191,7 +191,7 @@ export default function ProductDetailClient({ productId }) {
                   alt={product.name} 
                   width={500} 
                   height={600}
-                  className="w-full object-cover"
+                  className="w-full "
                   priority
                 />
               </motion.div>
@@ -236,7 +236,7 @@ export default function ProductDetailClient({ productId }) {
                   <span className="text-xl text-gray-500 line-through">
                     {product.price} LE
                   </span>
-                  <span className="bg-red-100 text-red-600 px-3 py-1 rounded-full text-sm font-medium">
+                  <span className="bg-red-100 text px-3 py-1 rounded-full text-sm font-medium">
                     {Math.round((1 - product.newprice / product.price) * 100)}% OFF
                   </span>
                 </>
@@ -248,35 +248,31 @@ export default function ProductDetailClient({ productId }) {
             </motion.div>
 
             {/* Sizes */}
-            <motion.div variants={itemVariants}>
-              <h3 className="text-sm font-semibold text-gray-900 mb-3 uppercase tracking-wide">
-                Size: {selectedSize || "Please select"}
-              </h3>
-              <div className="flex gap-3">
-                {["50ml", "100ml", "150ml", "200ml", "250ml"].map((size) => {
-                  const isAvailable = product.sizes?.includes(size)
-                  const isSelected = selectedSize === size
-                  return (
-                    <motion.button
-                      key={size}
-                      onClick={() => isAvailable && setSelectedSize(size)}
-                      disabled={!isAvailable}
-                      className={`px-4 py-3 rounded-lg border-2 font-semibold transition-all ${
-                        isSelected 
-                          ? "border-gray-800 bg-gray-800 text-white" 
-                          : isAvailable 
-                            ? "border-gray-300 bg-white text-gray-900 hover:border-gray-400" 
-                            : "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed"
-                      }`}
-                      whileHover={isAvailable ? { scale: 1.05 } : {}}
-                      whileTap={isAvailable ? { scale: 0.95 } : {}}
-                    >
-                      {size}
-                    </motion.button>
-                  )
-                })}
-              </div>
-            </motion.div>
+<motion.div variants={itemVariants}>
+  <h3 className="text-sm font-semibold text-gray-900 mb-3 uppercase tracking-wide">
+    Size: {selectedSize || "Please select"}
+  </h3>
+  <div className="flex gap-3">
+    {product.sizes?.map((size) => {
+      const isSelected = selectedSize === size
+      return (
+        <motion.button
+          key={size}
+          onClick={() => setSelectedSize(size)}
+          className={`px-4 py-3 rounded-lg border-2 font-semibold transition-all ${
+            isSelected 
+              ? "border-gray-800 bg-gray-800 text-white" 
+              : "border-gray-300 bg-white text-gray-900 hover:border-gray-400"
+          }`}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          {size}
+        </motion.button>
+      )
+    })}
+  </div>
+</motion.div>
 
             {/* Add to Cart Button */}
             <motion.div className="space-y-4" variants={itemVariants}>
@@ -284,8 +280,8 @@ export default function ProductDetailClient({ productId }) {
                 onClick={handleAddToCart}
                 className={`w-full py-4 px-6 rounded-xl font-semibold text-lg transition-all duration-300 ${
                   added
-                    ? "bg-green-600 text-white"
-                    : "bg-gray-900 text-white hover:bg-gray-800"
+                    ? "bg text-white"
+                    : "bg text-white "
                 }`}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
@@ -319,7 +315,7 @@ export default function ProductDetailClient({ productId }) {
 
               {/* Additional Information */}
               <motion.div 
-                className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-gray-100"
+                className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t "
                 variants={itemVariants}
               >
                 <div className="flex items-center gap-3 text-sm text-gray-600">
@@ -369,6 +365,14 @@ export default function ProductDetailClient({ productId }) {
           <RelatedProducts currentProduct={product} />
         </motion.div>
       </motion.div>
+           <div className="absolute md:min-h-[2300px] bg-auto bg-no-repeat opacity-10 -right-8  inset-0 -z-10">
+        <Image
+          src="/bg3.png"
+          alt="خلفية"
+          fill
+          className="object-cover"
+          priority
+        />  </div>
     </>
   )
 }

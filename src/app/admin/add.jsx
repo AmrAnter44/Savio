@@ -23,7 +23,7 @@ export default function AddProduct() {
   ];
   
   const sizeOptions = ["50ml", "100ml", "150ml", "200ml", "250ml"];
-  const typeOptions = ["men", "women"];
+  const typeOptions = ["men", "women", "unisex" , "master"];
 
   const handleSizeChange = (size) => {
     if (sizes.includes(size)) {
@@ -33,26 +33,84 @@ export default function AddProduct() {
     }
   };
 
-  const handleFileChange = (e) => {
+  // Image resize function
+  const resizeImage = (file, targetWidth = 768, targetHeight = 950) => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      const reader = new FileReader();
+
+      reader.onload = (e) => { 
+        img.src = e.target.result; 
+      };
+
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        
+        canvas.width = targetWidth;
+        canvas.height = targetHeight;
+        
+        ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+        
+        canvas.toBlob((blob) => {
+          const resizedFile = new File([blob], file.name, { 
+            type: file.type,
+            lastModified: Date.now()
+          });
+          resolve(resizedFile);
+        }, file.type, 0.8); // 0.8 quality for better compression
+      };
+
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleFileChange = async (e) => {
     const selectedFiles = Array.from(e.target.files);
     if (selectedFiles.length === 0) return;
 
-    const newPreviews = [];
-    selectedFiles.forEach(file => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        newPreviews.push(e.target.result);
-        if (newPreviews.length === selectedFiles.length) {
-          setPreviewUrls(prev => [...prev, ...newPreviews]);
+    setMessage("Processing images...");
+
+    try {
+      const resizedFiles = [];
+      const newPreviews = [];
+
+      for (let file of selectedFiles) {
+        if (!file.type.startsWith('image/')) {
+          console.warn(`Skipping non-image file: ${file.name}`);
+          setMessage(`File ${file.name} is not an image`);
+          continue;
         }
-      };
-      reader.readAsDataURL(file);
-    });
-    
-    setFiles(prev => [...prev, ...selectedFiles]);
+
+        if (file.size > 5242880) { // 5MB
+          console.warn(`File too large: ${file.name}`);
+          setMessage(`File ${file.name} is too large (max 5MB)`);
+          continue;
+        }
+
+        // Resize the image
+        const resizedFile = await resizeImage(file);
+        resizedFiles.push(resizedFile);
+
+        // Create preview
+        const previewUrl = URL.createObjectURL(resizedFile);
+        newPreviews.push(previewUrl);
+      }
+
+      setFiles(prev => [...prev, ...resizedFiles]);
+      setPreviewUrls(prev => [...prev, ...newPreviews]);
+      setMessage("");
+
+    } catch (error) {
+      console.error('Image processing error:', error);
+      setMessage("Error processing images: " + error.message);
+    } finally {
+      e.target.value = '';
+    }
   };
 
   const removeImage = (index) => {
+    URL.revokeObjectURL(previewUrls[index]);
     setFiles(prev => prev.filter((_, i) => i !== index));
     setPreviewUrls(prev => prev.filter((_, i) => i !== index));
   };
@@ -124,6 +182,10 @@ export default function AddProduct() {
         setMessage("Error: " + error.message);
       } else {
         setMessage("Fragrance added successfully!");
+        
+        // Clean up previews
+        previewUrls.forEach(url => URL.revokeObjectURL(url));
+        
         // Reset form
         setName("");
         setPrice("");
@@ -155,7 +217,7 @@ export default function AddProduct() {
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-900 focus:border-transparent"
+            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring focus:border-transparent"
             placeholder="Enter fragrance name"
             required
           />
@@ -168,7 +230,7 @@ export default function AddProduct() {
             type="number"
             value={price}
             onChange={(e) => setPrice(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-900 focus:border-transparent"
+            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring focus:border-transparent"
             placeholder="Enter price"
             required
           />
@@ -181,7 +243,7 @@ export default function AddProduct() {
             type="number"
             value={newprice}
             onChange={(e) => setNewprice(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-900 focus:border-transparent"
+            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring focus:border-transparent"
             placeholder="Enter sale price"
           />
         </div>
@@ -192,7 +254,7 @@ export default function AddProduct() {
           <select
             value={brand}
             onChange={(e) => setBrand(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-900 focus:border-transparent"
+            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring focus:border-transparent"
             required
           >
             <option value="">Select Brand</option>
@@ -213,7 +275,7 @@ export default function AddProduct() {
                 onClick={() => setType(option)}
                 className={`px-4 py-2 rounded-md capitalize transition-colors ${
                   type === option 
-                    ? 'bg-red-900 text-white' 
+                    ? 'bg text-white' 
                     : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                 }`}
               >
@@ -234,7 +296,7 @@ export default function AddProduct() {
                 onClick={() => handleSizeChange(size)}
                 className={`px-3 py-2 rounded-md text-sm transition-colors ${
                   sizes.includes(size)
-                    ? 'bg-red-900 text-white'
+                    ? 'bg text-white'
                     : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                 }`}
               >
@@ -260,6 +322,7 @@ export default function AddProduct() {
               <div className="text-gray-500">
                 <p className="text-lg">📁 Select Images</p>
                 <p className="text-sm">Click to upload multiple images</p>
+                <p className="text-xs text-gray-400 mt-1">Images will be resized to 768x950px</p>
               </div>
             </label>
           </div>
@@ -294,7 +357,7 @@ export default function AddProduct() {
               ? 'bg-green-100 text-green-700'
               : message.includes('Error') || message.includes('❌')
               ? 'bg-red-100 text-red-700'
-              : 'bg-red-900 text-red-900'
+              : 'bg-blue-100 text-blue-700'
           }`}>
             {message}
           </div>
@@ -307,7 +370,7 @@ export default function AddProduct() {
           className={`w-full py-3 px-4 rounded-md font-medium transition-colors ${
             loading
               ? 'bg-gray-400 text-white cursor-not-allowed'
-              : 'bg-red-900 hover:bg-red-900 text-white'
+              : 'bg hover:bg-red-800 text-white'
           }`}
         >
           {loading ? 'Adding...' : 'Add Fragrance'}
