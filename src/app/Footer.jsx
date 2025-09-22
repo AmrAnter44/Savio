@@ -16,17 +16,10 @@ export default function Footer() {
         </div>
 
         <div className="flex space-x-6">
-          <a
-            href="https://facebook.com/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-blue-400 transition-colors duration-200 hover:scale-110 transform"
-          >
-            <Facebook size={22} />
-          </a>
+
 
           <a
-            href="https://www.instagram.com/wn_store_eg_2025/"
+            href="https://www.instagram.com/savio_fragrances?igsh=cW1ncWY5Mnp4MHNu"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-pink-400 transition-colors duration-200 hover:scale-110 transform"
@@ -34,14 +27,19 @@ export default function Footer() {
             <Instagram size={22} />
           </a>
 
-          <a
-            href="mailto:your@email.com"
+          <Mail
+            href="mailto:eslammoatasem99@gmail.com"
+            size={22}
             className="hover:text-green-400 transition-colors duration-200 hover:scale-110 transform"
-          >
-            <Mail size={22} />
-          </a>
+          />
         </div>
       </div>
+            <p className="text-center text-black">
+        Direct by{" "}
+        <a href="https://tamyaz.online/" className="text-white">
+          Tamyaz
+        </a>
+      </p>
     </footer>
   );
 }

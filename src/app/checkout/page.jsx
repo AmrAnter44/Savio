@@ -159,7 +159,7 @@ export default function Page() {
       `Products:\n${cartDetails}` +
       `Total: ${total} EGP\n`;
 
-    const yourWhatsAppNumber = "201211661802";
+    const yourWhatsAppNumber = "201063439705";
     const encodedMessage = encodeURIComponent(message);
 
     window.open(`https://wa.me/${yourWhatsAppNumber}?text=${encodedMessage}`, "_blank");

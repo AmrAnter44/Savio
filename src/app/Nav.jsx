@@ -82,7 +82,7 @@ export default function Navbar() {
                 whileTap={{ scale: 0.9 }}
                 transition={{ duration: 0.2 }}
               >
-                <Link href="https://wa.me/+201211661802" className="m-2">
+                <Link href="https://wa.me/+201063439705" className="m-2">
                   <FontAwesomeIcon
                     className={`fa-brands fa-whatsapp text-3xl w-9 mr-6 ${
                       scrolled ? "text" : "text-white"
