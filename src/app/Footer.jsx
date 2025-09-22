@@ -22,7 +22,7 @@ export default function Footer() {
             href="https://www.instagram.com/savio_fragrances?igsh=cW1ncWY5Mnp4MHNu"
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-pink-400 transition-colors duration-200 hover:scale-110 transform"
+            className="hover:text-pink-400 transition-colors duration-200 hover:scale-110 transform mt-4"
           >
             <Instagram size={22} />
           </a>
@@ -30,7 +30,7 @@ export default function Footer() {
           <Mail
             href="mailto:eslammoatasem99@gmail.com"
             size={22}
-            className="hover:text-green-400 transition-colors duration-200 hover:scale-110 transform"
+            className="hover:text-green-400 transition-colors duration-200 hover:scale-110 transform mt-4"
           />
         </div>
       </div>
