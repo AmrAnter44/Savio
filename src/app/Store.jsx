@@ -276,10 +276,10 @@ export default function StorePage() {
               variants={saleVariants}
               className="text-center mb-8"
             >
-              <div className="inline-flex items-center gap-3  text px-6 py-3 rounded-full mb-4 ">
-                <FaFire className="text-xl" />
-                <span className="text-lg font-bold text">SALE UP TO 50% OFF</span>
-                <FaFire className="text-xl" />
+              <div className="inline-flex items-center gap-3 bg  text px-6 py-3 rounded-full mb-4 ">
+                <FaFire className="text-xl text-white" />
+                <span className="text-lg font-bold text-white ">SALE UP TO 50% OFF</span>
+                <FaFire className="text-xl text-white" />
               </div>
 
               <p className="text">Limited time offers on selected fragrances</p>
