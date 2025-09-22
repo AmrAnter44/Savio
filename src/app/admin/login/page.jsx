@@ -51,11 +51,11 @@ export default function LoginPage() {
       <button
         type="submit"
         disabled={loading}
-        className="w-full py-2 bg-purple-600 text-white rounded"
+        className="w-full py-2 bg-red-900 text-white rounded"
       >
         {loading ? "Logging in..." : "Login"}
       </button>
-      {error && <p className="text-red-500 text-center mt-2">{error}</p>}
+      {error && <p className="text-red-900 text-center mt-2">{error}</p>}
     </form>
   );
 }
