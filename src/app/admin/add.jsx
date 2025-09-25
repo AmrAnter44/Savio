@@ -291,7 +291,7 @@ The product is saved but NOT live yet - you control when it goes public.`)
 
       {/* Manual Update Notice */}
       <motion.div 
-        className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800"
+        className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-sm text-red-800"
         variants={inputVariants}
       >
         <h4 className="font-semibold mb-2 flex items-center gap-2">
@@ -487,7 +487,7 @@ The product is saved but NOT live yet - you control when it goes public.`)
               message.includes("successfully") || message.includes("✅") 
                 ? "text-green-700 bg-green-50 border border-green-200" 
                 : message.includes("Processing") || message.includes("Uploading") || message.includes("Creating")
-                ? "text-blue-700 bg-blue-50 border border-blue-200"
+                ? "text-red-700 bg-red-50 border border-red-200"
                 : "text-red-700 bg-red-50 border border-red-200"
             }`}
             initial={{ opacity: 0, y: -20 }}
@@ -507,7 +507,7 @@ The product is saved but NOT live yet - you control when it goes public.`)
         className={`mt-4 py-4 px-6 rounded-lg font-semibold text-lg transition-all ${
           loading || uploadingImages
             ? "bg-gray-400 text-gray-200 cursor-not-allowed"
-            : "bg-red-600 hover:bg-red-700 text-white shadow-lg hover:shadow-xl"
+            : "bg text-white shadow-lg hover:shadow-xl"
         }`}
         variants={inputVariants}
         whileHover={!loading && !uploadingImages ? { scale: 1.02, y: -2 } : {}}

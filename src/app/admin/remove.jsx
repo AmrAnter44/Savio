@@ -414,7 +414,7 @@ export default function ManageFragrances() {
         const { data, error } = await supabase.storage
           .from('product-images')
           .upload(fileName, file, {
-            cacheControl: '3600',
+            cacheControl: '3900',
             upsert: false
           });
 
@@ -607,7 +607,7 @@ export default function ManageFragrances() {
             placeholder="Search fragrances by name or brand..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-4 py-3 pl-12 pr-12 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-red-600 transition-all duration-200"
+            className="w-full px-4 py-3 pl-12 pr-12 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-red-900 transition-all duration-200"
             variants={searchVariants}
             whileFocus="focus"
           />
@@ -635,7 +635,7 @@ export default function ManageFragrances() {
         <AnimatePresence>
           {searchTerm && (
             <motion.p 
-              className="text-sm text-gray-600 mt-2 text-center"
+              className="text-sm text-gray-900 mt-2 text-center"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -655,7 +655,7 @@ export default function ManageFragrances() {
         {message && (
           <motion.p 
             className={`text-center mb-4 p-3 rounded ${
-              message.includes("successfully") ? "text-green-600 bg-green-50" : "text-red-600 bg-red-50"
+              message.includes("successfully") ? "text-green-900 bg-green-50" : "text-red-900 bg-red-50"
             }`}
             variants={messageVariants}
             initial="hidden"
@@ -677,7 +677,7 @@ export default function ManageFragrances() {
           transition={{ duration: 0.4 }}
         >
           <motion.div
-            className="w-8 h-8 border-4 border-gray-300 border-t-red-600 rounded-full mb-4"
+            className="w-8 h-8 border-4 border-gray-300 border-t-red-900 rounded-full mb-4"
             variants={loadingVariants}
             animate="animate"
           />
@@ -692,7 +692,7 @@ export default function ManageFragrances() {
           transition={{ duration: 0.4 }}
         >
           <div className="text-6xl mb-4">🌸</div>
-          <h3 className="text-xl font-semibold text-gray-600 mb-2">
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">
             {searchTerm ? 'No fragrances found' : 'No fragrances yet'}
           </h3>
           <p className="text-gray-500">
@@ -704,7 +704,7 @@ export default function ManageFragrances() {
           {searchTerm && (
             <motion.button
               onClick={clearSearch}
-              className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
+              className="mt-4 px-4 py-2 bg-red-900 text-white rounded hover:bg-red-700 transition"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -777,7 +777,7 @@ export default function ManageFragrances() {
                 {prod.sizes && prod.sizes.length > 0 && (
                   <div className="flex flex-wrap gap-1 justify-center">
                     {prod.sizes.map((size, i) => (
-                      <span key={i} className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
+                      <span key={i} className="text-xs bg-gray-100 text-gray-900 px-2 py-1 rounded">
                         {size}
                       </span>
                     ))}
@@ -793,7 +793,7 @@ export default function ManageFragrances() {
               >
                 <motion.button
                   onClick={() => openEditModal(prod)}
-                  className="px-3 py-1 bg-red-600 text-white rounded transition hover:bg-red-700"
+                  className="px-3 py-1 bg-red-900 text-white rounded transition hover:bg-red-700"
                   variants={buttonVariants}
                   initial="idle"
                   whileHover="hover"
@@ -803,7 +803,7 @@ export default function ManageFragrances() {
                 </motion.button>
                 <motion.button
                   onClick={() => showDeleteConfirmation(prod)}
-                  className="px-3 py-1 bg-gray-600 text-white rounded hover:bg-gray-700 transition"
+                  className="px-3 py-1 bg-gray-900 text-white rounded hover:bg-gray-700 transition"
                   variants={buttonVariants}
                   initial="idle"
                   whileHover="hover"
@@ -844,7 +844,7 @@ export default function ManageFragrances() {
               >
                 <div className="text-6xl mb-4">⚠️</div>
                 <h3 className="text-xl font-bold text-gray-800 mb-2">Delete Fragrance?</h3>
-                <p className="text-gray-600 mb-2">
+                <p className="text-gray-900 mb-2">
                   Are you sure you want to delete
                 </p>
                 <p className="font-semibold text-gray-800">"{productToDelete.name}"?</p>
@@ -861,7 +861,7 @@ export default function ManageFragrances() {
               >
                 <motion.button
                   onClick={cancelDelete}
-                  className="px-6 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition disabled:opacity-50"
+                  className="px-6 py-2 bg-gray-500 text-white rounded hover:bg-gray-900 transition disabled:opacity-50"
                   variants={buttonVariants}
                   initial="idle"
                   whileHover={!deleting ? "hover" : {}}
@@ -872,7 +872,7 @@ export default function ManageFragrances() {
                 </motion.button>
                 <motion.button
                   onClick={confirmDelete}
-                  className="px-6 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition disabled:opacity-50"
+                  className="px-6 py-2 bg-red-900 text-white rounded hover:bg-red-700 transition disabled:opacity-50"
                   variants={buttonVariants}
                   initial="idle"
                   whileHover={!deleting ? "hover" : {}}
@@ -931,7 +931,7 @@ export default function ManageFragrances() {
                 value={editName}
                 onChange={(e) => setEditName(e.target.value)}
                 placeholder="Fragrance Name *"
-                className="w-full mb-3 p-3 border rounded-lg focus:outline-none focus:border-red-600"
+                className="w-full mb-3 p-3 border rounded-lg focus:outline-none focus:border-red-900"
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3, delay: 0.1 }}
@@ -942,7 +942,7 @@ export default function ManageFragrances() {
                 value={editPrice}
                 onChange={(e) => setEditPrice(e.target.value)}
                 placeholder="Price (LE) *"
-                className="w-full mb-3 p-3 border rounded-lg focus:outline-none focus:border-red-600"
+                className="w-full mb-3 p-3 border rounded-lg focus:outline-none focus:border-red-900"
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3, delay: 0.2 }}
@@ -953,7 +953,7 @@ export default function ManageFragrances() {
                 value={editNewPrice}
                 onChange={(e) => setEditNewPrice(e.target.value)}
                 placeholder="Sale Price (LE) - optional"
-                className="w-full mb-3 p-3 border rounded-lg focus:outline-none focus:border-red-600"
+                className="w-full mb-3 p-3 border rounded-lg focus:outline-none focus:border-red-900"
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3, delay: 0.3 }}
@@ -969,7 +969,7 @@ export default function ManageFragrances() {
                 <select 
                   value={editBrand} 
                   onChange={(e) => setEditBrand(e.target.value)} 
-                  className="w-full p-3 border rounded-lg focus:outline-none focus:border-red-600" 
+                  className="w-full p-3 border rounded-lg focus:outline-none focus:border-red-900" 
                   required
                 >
                   <option value="">Select Brand *</option>
@@ -997,7 +997,7 @@ export default function ManageFragrances() {
                       onClick={() => setEditType(t)}
                       className={`px-4 py-2 rounded-full font-medium transition-all ${
                         editType === t 
-                          ? "bg-red-600 text-white shadow-lg" 
+                          ? "bg-red-900 text-white shadow-lg" 
                           : "bg-gray-100 text-gray-700 hover:bg-red-100 hover:text-red-700"
                       }`}
                       initial={{ opacity: 0, scale: 0.8 }}
@@ -1028,8 +1028,8 @@ export default function ManageFragrances() {
                       onClick={() => toggleSize(size)}
                       className={`px-3 py-1 rounded border text-sm transition ${
                         editSizes.includes(size) 
-                          ? "bg-red-600 text-white border-red-600" 
-                          : "bg-white text-gray-700 border-gray-300 hover:border-red-600"
+                          ? "bg-red-900 text-white border-red-900" 
+                          : "bg-white text-gray-700 border-gray-300 hover:border-red-900"
                       }`}
                       initial={{ opacity: 0, scale: 0.8 }}
                       animate={{ opacity: 1, scale: 1 }}
@@ -1066,7 +1066,7 @@ export default function ManageFragrances() {
                         />
                         <button
                           onClick={() => removeImage(idx)}
-                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 transition"
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-900 transition"
                         >
                           ×
                         </button>
@@ -1076,7 +1076,7 @@ export default function ManageFragrances() {
                 )}
 
                 {/* Upload New Images */}
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-red-600 transition">
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-red-900 transition">
                   <input
                     type="file"
                     accept="image/*"
@@ -1088,14 +1088,14 @@ export default function ManageFragrances() {
                   />
                   <label 
                     htmlFor="image-upload" 
-                    className={`cursor-pointer text-red-600 hover:text-red-700 font-medium ${
+                    className={`cursor-pointer text-red-900 hover:text-red-700 font-medium ${
                       uploadingImages ? 'opacity-50 cursor-not-allowed' : ''
                     }`}
                   >
                     {uploadingImages ? (
                       <span className="flex items-center justify-center gap-2">
                         <motion.div
-                          className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full"
+                          className="w-4 h-4 border-2 border-red-900 border-t-transparent rounded-full"
                           variants={loadingVariants}
                           animate="animate"
                         />
@@ -1121,7 +1121,7 @@ export default function ManageFragrances() {
               >
                 <motion.button
                   onClick={closeEditModal}
-                  className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-500 transition"
+                  className="px-4 py-2 bg-gray-900 text-white rounded hover:bg-gray-500 transition"
                   variants={buttonVariants}
                   initial="idle"
                   whileHover="hover"
@@ -1131,7 +1131,7 @@ export default function ManageFragrances() {
                 </motion.button>
                 <motion.button
                   onClick={handleSaveEdit}
-                  className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition disabled:opacity-50"
+                  className="px-4 py-2 bg-green-900 text-white rounded hover:bg-green-700 transition disabled:opacity-50"
                   variants={buttonVariants}
                   initial="idle"
                   whileHover="hover"

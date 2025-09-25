@@ -242,7 +242,7 @@ export default function StoreSSG({
               variants={saleVariants}
               className="text-center mb-8"
             >
-              <div className="inline-flex items-center gap-3 bg-red-600 text-white px-6 py-3 rounded-full mb-4">
+              <div className="inline-flex items-center gap-3 bg text-white px-6 py-3 rounded-full mb-4">
                 <FaFire className="text-xl text-white" />
                 <span className="text-lg font-bold text-white">SALE UP TO 50% OFF</span>
                 <FaFire className="text-xl text-white" />
@@ -264,7 +264,7 @@ export default function StoreSSG({
                   <Link href={`/product/${product.id}`} className="block">
                     <div className="group bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer">
                       {/* Hot Deal Badge */}
-                      <div className="absolute top-3 left-3 text-white bg-red-600 px-3 py-1 rounded-full text-xs font-bold z-10 flex items-center gap-1">
+                      <div className="absolute top-3 left-3 text-white bg px-3 py-1 rounded-full text-xs font-bold z-10 flex items-center gap-1">
                         {getDiscountPercentage(product.price, product.newprice)}% OFF
                       </div>
 
@@ -295,7 +295,7 @@ export default function StoreSSG({
 
                         {/* Price */}
                         <div className="flex items-center gap-2">
-                          <span className="text-lg font-bold text-red-600">
+                          <span className="text-lg font-bold text">
                             {product.newprice} LE
                           </span>
                           <span className="text-sm line-through text-gray-400">
@@ -387,14 +387,14 @@ export default function StoreSSG({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <span className="text-sm font-medium text-gray-700">Filtering by:</span>
-                    <span className="bg-red-600 text-white px-3 py-1 rounded-full text-sm font-medium">
+                    <span className="bg text-white px-3 py-1 rounded-full text-sm font-medium">
                       {initialCategories.find(c => c.key === typeFilter)?.name}
                       {typeFilter === "Box" && ""}
                     </span>
                   </div>
                   <button
                     onClick={() => setTypeFilter("")}
-                    className="text-red-600 hover:text-red-700 text-sm font-medium"
+                    className="text hover:text-red-700 text-sm font-medium"
                   >
                     Clear Category
                   </button>
@@ -419,14 +419,14 @@ export default function StoreSSG({
               {/* Action Buttons */}
               <div className="ml-auto flex gap-3">
                 <button
-                  className="px-4 py-3 bg-red-600 hover:bg-red-700 rounded-lg text-sm font-medium text-white transition-colors"
+                  className="px-4 py-3 bg hover:bg-red-700 rounded-lg text-sm font-medium text-white transition-colors"
                   onClick={clearAllFilters}
                 >
                   Clear All
                 </button>
                 
                 <button
-                  className="p-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+                  className="p-3 bg hover:bg-red-700 text-white rounded-lg transition-colors"
                   onClick={() => setShowFilters(!showFilters)}
                 >
                   {showFilters ? 
@@ -542,7 +542,7 @@ export default function StoreSSG({
 
                       {/* Sale Badge */}
                       {product.newprice && (
-                        <div className="absolute top-3 left-3 text-white bg-red-600 px-3 py-1 rounded-full text-xs font-bold z-10 flex items-center gap-1">
+                        <div className="absolute top-3 left-3 text-white bg px-3 py-1 rounded-full text-xs font-bold z-10 flex items-center gap-1">
                           {getDiscountPercentage(product.price, product.newprice)}% OFF
                         </div>
                       )}

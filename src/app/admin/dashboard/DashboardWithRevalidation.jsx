@@ -179,17 +179,17 @@ export default function DashboardWithRevalidation() {
     >
       {/* Header with Manual Update */}
       <motion.div 
-        className="bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl p-6 mb-8"
+        className="bg-gradient-to-r from-red-900 to-pink-900 text-white rounded-xl p-6 mb-8"
         variants={revalidationVariants}
       >
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <h1 className="text-2xl font-bold mb-2">Admin Dashboard</h1>
-            <p className="text-purple-100">
+            <p className="text-red-100">
               Manage products and update the website manually for optimal performance
             </p>
             {lastRevalidation && (
-              <p className="text-sm text-purple-200 mt-2">
+              <p className="text-sm text-red-200 mt-2">
                 Last updated: {lastRevalidation.toLocaleString()}
               </p>
             )}
@@ -198,7 +198,7 @@ export default function DashboardWithRevalidation() {
           <div className="flex flex-col sm:flex-row gap-3">
             {/* Cache Info */}
             {cacheInfo && (
-              <div className="text-sm text-purple-100 bg-white/10 rounded-lg p-3">
+              <div className="text-sm text-red-100 bg-white/10 rounded-lg p-3">
                 <div>Cache: {cacheInfo.hasCache ? '✅ Active' : '❌ Empty'}</div>
                 {cacheInfo.hasCache && (
                   <div>{cacheInfo.cacheSize} products cached</div>
@@ -213,7 +213,7 @@ export default function DashboardWithRevalidation() {
               className={`px-6 py-3 rounded-lg font-semibold transition-all ${
                 revalidating
                   ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
-                  : 'bg-white text-purple-600 hover:bg-gray-100'
+                  : 'bg-white text-red-900 hover:bg-gray-100'
               }`}
               variants={buttonVariants}
               initial="idle"
@@ -262,7 +262,7 @@ export default function DashboardWithRevalidation() {
         <motion.button
           className={`px-6 py-3 rounded-lg font-semibold transition-colors ${
             activeTab === "add"
-              ? "bg-purple-600 text-white"
+              ? "bg-red-900 text-white"
               : "bg-gray-200 text-gray-800 hover:bg-gray-300"
           }`}
           onClick={() => setActiveTab("add")}
@@ -278,7 +278,7 @@ export default function DashboardWithRevalidation() {
         <motion.button
           className={`px-6 py-3 rounded-lg font-semibold transition-colors ${
             activeTab === "remove"
-              ? "bg-purple-600 text-white"
+              ? "bg-red-900 text-white"
               : "bg-gray-200 text-gray-800 hover:bg-gray-300"
           }`}
           onClick={() => setActiveTab("remove")}
@@ -308,7 +308,7 @@ export default function DashboardWithRevalidation() {
       
       {/* Footer Instructions */}
       <motion.div 
-        className="mt-12 p-6 bg-gray-50 rounded-xl border-l-4 border-purple-500"
+        className="mt-12 p-6 bg-gray-50 rounded-xl border-l-4 border-red-900"
         variants={revalidationVariants}
       >
         <h3 className="font-semibold text-gray-900 mb-3">🎯 Performance Tips:</h3>
