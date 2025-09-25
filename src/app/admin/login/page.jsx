@@ -17,20 +17,29 @@ export default function LoginPage() {
 
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
-      password
+      password,
     });
 
     if (error) {
       setError(error.message);
+      console.error("Login error:", error.message);
+    } else if (data?.session) {
+
+ router.push("/admin/dashboard");
+ router.replace("/admin/dashboard");
+
     } else {
-      router.push("/admin/dashboard");
+      setError("Something went wrong, please try again.");
     }
 
     setLoading(false);
   };
 
   return (
-    <form onSubmit={handleLogin} className="p-6 max-w-sm mx-auto bg-white rounded shadow">
+    <form
+      onSubmit={handleLogin}
+      className="p-6 max-w-sm mx-auto bg-white rounded shadow"
+    >
       <h2 className="text-xl font-bold mb-4">Admin Login</h2>
       <input
         type="email"
@@ -51,11 +60,11 @@ export default function LoginPage() {
       <button
         type="submit"
         disabled={loading}
-        className="w-full py-2 bg-red-900 text-white rounded"
+        className="w-full py-2 bg-purple-600 text-white rounded"
       >
         {loading ? "Logging in..." : "Login"}
       </button>
-      {error && <p className="text-red-900 text-center mt-2">{error}</p>}
+      {error && <p className="text-red-500 text-center mt-2">{error}</p>}
     </form>
   );
 }

@@ -136,7 +136,7 @@ const loadingVariants = {
 const searchVariants = {
   focus: {
     scale: 1.02,
-    boxShadow: "0 0 0 3px rgba(168, 85, 247, 0.1)",
+    boxShadow: "0 0 0 3px rgba(239, 68, 68, 0.1)",
     transition: {
       duration: 0.2
     }
@@ -169,7 +169,7 @@ const confirmationVariants = {
   }
 };
 
-export default function ManageProducts() {
+export default function ManageFragrances() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
@@ -180,9 +180,9 @@ export default function ManageProducts() {
   const [editPrice, setEditPrice] = useState("");
   const [editNewPrice, setEditNewPrice] = useState("");
   const [editBrand, setEditBrand] = useState("");
-  const [editPictures, setEditPictures] = useState([]);
   const [editSizes, setEditSizes] = useState([]);
   const [editType, setEditType] = useState("");
+  const [editPictures, setEditPictures] = useState([]);
   const [uploadingImages, setUploadingImages] = useState(false);
 
   // Confirmation modal state
@@ -190,22 +190,23 @@ export default function ManageProducts() {
   const [productToDelete, setProductToDelete] = useState(null);
   const [deleting, setDeleting] = useState(false);
 
-  const brandOptions = [
-    "Chanel", "Dior", "Tom Ford", "Yves Saint Laurent", "Versace", "Gucci", 
-    "Armani", "Calvin Klein", "Hugo Boss", "Dolce & Gabbana", "Paco Rabanne",
-    "Jean Paul Gaultier", "Thierry Mugler", "Lancôme", "Hermès", "Creed",
-    "Maison Margiela", "Viktor & Rolf", "Issey Miyake", "Burberry", "Other"
-  ];
-
+  // Fragrance-specific options
   const sizeOptions = ["50ml", "100ml", "150ml", "200ml", "250ml"];
-  const typeOptions = ["men", "women"];
+  const typeOptions = ["women", "men", "master"]; // master for Box category
+  const brandOptions = [
+    "Chanel", "Dior", "Tom Ford", "Creed", "Hermès", "Yves Saint Laurent",
+    "Versace", "Gucci", "Prada", "Armani", "Calvin Klein", "Hugo Boss",
+    "Dolce & Gabbana", "Viktor & Rolf", "Jean Paul Gaultier", "Thierry Mugler",
+    "Maison Margiela", "Byredo", "Le Labo", "Diptyque", "Other"
+  ];
 
   // Filter products based on search term
   const filteredProducts = useMemo(() => {
     if (!searchTerm.trim()) return products;
     
     return products.filter(product =>
-      product.name.toLowerCase().includes(searchTerm.toLowerCase().trim())
+      product.name.toLowerCase().includes(searchTerm.toLowerCase().trim()) ||
+      (product.brand && product.brand.toLowerCase().includes(searchTerm.toLowerCase().trim()))
     );
   }, [products, searchTerm]);
 
@@ -215,7 +216,7 @@ export default function ManageProducts() {
       
       if (error) {
         console.error('Storage check error:', error);
-        setMessage('⚠️ Call 01028518754');
+        setMessage('Call 01028518754');
         return;
       }
 
@@ -236,13 +237,13 @@ export default function ManageProducts() {
         
       if (error) {
         console.error(error);
-        setMessage("Error loading products: " + error.message);
+        setMessage("Error loading fragrances: " + error.message);
       } else {
         setProducts(data || []);
       }
     } catch (error) {
       console.error("Fetch error:", error);
-      setMessage("Error loading products: " + error.message);
+      setMessage("Error loading fragrances: " + error.message);
     } finally {
       setLoading(false);
     }
@@ -269,7 +270,8 @@ export default function ManageProducts() {
     setDeleting(true);
 
     try {
-      const res = await fetch(`/api/products/${productToDelete.id}`, { method: "DELETE" });
+      const productId = productToDelete.uuid || productToDelete.id;
+      const res = await fetch(`/api/products/${productId}`, { method: "DELETE" });
       
       if (!res.ok) {
         let errorMessage = `HTTP error! status: ${res.status}`;
@@ -290,13 +292,24 @@ export default function ManageProducts() {
         return;
       }
 
-      setMessage("Product deleted successfully!");
+      // Trigger revalidation for SSG/ISR pages
+      try {
+        await fetch('/api/revalidate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'delete', productId: productId })
+        });
+      } catch (revError) {
+        console.warn('Revalidation request failed:', revError);
+      }
+
+      setMessage("Fragrance deleted successfully! Pages will update shortly.");
       fetchProducts();
       setTimeout(() => setMessage(""), 3000);
       
     } catch (error) {
       console.error("Delete error:", error);
-      setMessage("Error deleting product: " + error.message);
+      setMessage("Error deleting fragrance: " + error.message);
       setTimeout(() => setMessage(""), 5000);
     } finally {
       setDeleting(false);
@@ -311,23 +324,22 @@ export default function ManageProducts() {
     setEditPrice(prod.price);
     setEditNewPrice(prod.newprice || "");
     setEditBrand(prod.brand || "");
-    setEditPictures(prod.pictures || []);
     setEditSizes(prod.sizes || []);
     setEditType(prod.type || "");
+    setEditPictures(prod.pictures || []);
   };
 
-  const handleSizeChange = (size) => {
-    if (editSizes.includes(size)) {
-      setEditSizes(editSizes.filter(s => s !== size));
-    } else {
-      setEditSizes([...editSizes, size]);
-    }
+  const toggleSize = (size) => {
+    setEditSizes((prev) =>
+      prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size]
+    );
   };
 
   // Image resize function
   const resizeImage = (file, targetWidth = 768, targetHeight = 950) => {
     return new Promise((resolve) => {
-      const img = new Image();
+      // Create image element properly for browser environment
+      const img = document.createElement('img');
       const reader = new FileReader();
 
       reader.onload = (e) => { 
@@ -410,27 +422,19 @@ export default function ManageProducts() {
           console.error('Upload error for', file.name, ':', error);
           
           if (error.message.includes('Bucket not found')) {
-            setMessage('❌ Storage bucket "product-images" not found. Please create it manually in Supabase Dashboard: Storage > Create Bucket > Name: "product-images" > Public: ✅');
+            setMessage('Storage bucket "product-images" not found. Please create it manually in Supabase Dashboard');
             setTimeout(() => setMessage(""), 10000);
             break;
           } else if (error.message.includes('row-level security') || error.message.includes('RLS')) {
-            setMessage('🔒 RLS Policy Error: Please run the SQL commands to fix storage policies. Check console for details.');
-            console.error('RLS Error - Run this SQL in Supabase:', `
-              ALTER TABLE storage.objects DISABLE ROW LEVEL SECURITY;
-              -- OR create proper policies:
-              ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
-              CREATE POLICY "Allow public upload" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'product-images');
-              CREATE POLICY "Allow public read" ON storage.objects FOR SELECT USING (bucket_id = 'product-images');
-              CREATE POLICY "Allow public delete" ON storage.objects FOR DELETE USING (bucket_id = 'product-images');
-            `);
+            setMessage('RLS Policy Error: Please run the SQL commands to fix storage policies');
             setTimeout(() => setMessage(""), 15000);
             break;
           } else if (error.message.includes('permission') || error.message.includes('denied')) {
-            setMessage('🚫 Permission denied. Please check your Supabase storage policies and make bucket public.');
+            setMessage('Permission denied. Please check your Supabase storage policies');
             setTimeout(() => setMessage(""), 8000);
             break;
           } else {
-            setMessage(`❌ Error uploading ${file.name}: ${error.message}`);
+            setMessage(`Error uploading ${file.name}: ${error.message}`);
           }
           continue;
         }
@@ -446,30 +450,17 @@ export default function ManageProducts() {
 
       if (uploadedUrls.length > 0) {
         setEditPictures(prev => [...prev, ...uploadedUrls]);
-        setMessage(`✅ Successfully uploaded ${uploadedUrls.length} image(s)`);
+        setMessage(`Successfully uploaded ${uploadedUrls.length} image(s)`);
         setTimeout(() => setMessage(""), 3000);
       } else if (uploadedUrls.length === 0 && processedFiles.length > 0) {
-        if (!message.includes('Bucket not found') && !message.includes('RLS Policy') && !message.includes('Permission denied')) {
-          setMessage("❌ No images were uploaded successfully");
-          setTimeout(() => setMessage(""), 3000);
-        }
+        setMessage("No images were uploaded successfully");
+        setTimeout(() => setMessage(""), 3000);
       }
 
     } catch (error) {
       console.error('Image upload error:', error);
-      if (error.message.includes('Bucket not found')) {
-        setMessage('❌ Storage bucket "product-images" not found. Please create it manually in Supabase Dashboard: Storage > Create Bucket > Name: "product-images" > Public: ✅');
-        setTimeout(() => setMessage(""), 10000);
-      } else if (error.message.includes('row-level security') || error.message.includes('RLS')) {
-        setMessage('🔒 RLS Policy Error: Please run the SQL commands to fix storage policies. Check console for details.');
-        console.error('RLS Error - Run this SQL in Supabase:', `
-          ALTER TABLE storage.objects DISABLE ROW LEVEL SECURITY;
-        `);
-        setTimeout(() => setMessage(""), 15000);
-      } else {
-        setMessage("❌ Error uploading images: " + error.message);
-        setTimeout(() => setMessage(""), 5000);
-      }
+      setMessage("Error uploading images: " + error.message);
+      setTimeout(() => setMessage(""), 5000);
     } finally {
       setUploadingImages(false);
       event.target.value = '';
@@ -500,26 +491,38 @@ export default function ManageProducts() {
   };
 
   const handleSaveEdit = async () => {
-    if (!editName.trim() || !editPrice) {
-      setMessage("Name and price are required!");
+    // تحقق من البيانات المطلوبة
+    const requiredFields = [];
+    
+    if (!editName.trim()) requiredFields.push("اسم البرفان");
+    if (!editPrice || editPrice <= 0) requiredFields.push("السعر");
+    if (!editBrand) requiredFields.push("البراند");
+    if (editSizes.length === 0) requiredFields.push("الأحجام");
+    if (!editType) requiredFields.push("الفئة");
+    
+    if (requiredFields.length > 0) {
+      setMessage(`برجاء إدخال: ${requiredFields.join(" - ")}`);
+      setTimeout(() => setMessage(""), 4000);
+      return;
+    }
+    
+    // تحقق من صحة السعر
+    if (editNewPrice && (isNaN(editNewPrice) || editNewPrice <= 0)) {
+      setMessage("سعر التخفيض يجب أن يكون رقم صحيح أكبر من الصفر");
       setTimeout(() => setMessage(""), 3000);
       return;
     }
-
-    if (editSizes.length === 0) {
-      setMessage("Please select at least one size!");
-      setTimeout(() => setMessage(""), 3000);
-      return;
-    }
-
-    if (!editType) {
-      setMessage("Please select a category (men/women)!");
+    
+    // تحقق من وجود صور
+    if (editPictures.length === 0) {
+      setMessage("برجاء إضافة صورة واحدة على الأقل للبرفان");
       setTimeout(() => setMessage(""), 3000);
       return;
     }
 
     try {
-      const res = await fetch(`/api/products/${editingProduct.id}`, {
+      const productId = editingProduct.uuid || editingProduct.id;
+      const res = await fetch(`/api/products/${productId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -529,15 +532,26 @@ export default function ManageProducts() {
           price: Number(editPrice),
           newprice: editNewPrice ? Number(editNewPrice) : null,
           brand: editBrand,
-          pictures: editPictures,
           sizes: editSizes,
-          type: editType
+          type: editType,
+          pictures: editPictures
         }),
       });
 
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.error || "Failed to update product");
+        throw new Error(errorData.error || "Failed to update fragrance");
+      }
+
+      // Trigger revalidation for SSG/ISR pages on update
+      try {
+        await fetch('/api/revalidate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'update', productId: productId })
+        });
+      } catch (revError) {
+        console.warn('Revalidation request failed:', revError);
       }
 
       setEditingProduct(null);
@@ -557,6 +571,11 @@ export default function ManageProducts() {
 
   const closeEditModal = () => {
     setEditingProduct(null);
+  };
+
+  const getCategoryDisplayName = (type) => {
+    if (type === 'master') return 'Master-Box';
+    return type ? type.charAt(0).toUpperCase() + type.slice(1) : '';
   };
 
   return (
@@ -585,10 +604,10 @@ export default function ManageProducts() {
         <div className="relative">
           <motion.input
             type="text"
-            placeholder=" Search fragrances by name..."
+            placeholder="Search fragrances by name or brand..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-4 py-3 pl-12 pr-12 border-2 border-gray-300 rounded-lg focus:outline-none focus:border  transition-all duration-200"
+            className="w-full px-4 py-3 pl-12 pr-12 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-red-600 transition-all duration-200"
             variants={searchVariants}
             whileFocus="focus"
           />
@@ -599,7 +618,7 @@ export default function ManageProducts() {
             {searchTerm && (
               <motion.button
                 onClick={clearSearch}
-                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-red-700 transition-colors text-lg"
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-red-500 transition-colors text-lg"
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
@@ -636,7 +655,7 @@ export default function ManageProducts() {
         {message && (
           <motion.p 
             className={`text-center mb-4 p-3 rounded ${
-              message.includes("successfully") ? "text-green-600 bg-green-50" : "text bg-red-50"
+              message.includes("successfully") ? "text-green-600 bg-green-50" : "text-red-600 bg-red-50"
             }`}
             variants={messageVariants}
             initial="hidden"
@@ -685,7 +704,7 @@ export default function ManageProducts() {
           {searchTerm && (
             <motion.button
               onClick={clearSearch}
-              className="mt-4 px-4 py-2 bg text-white rounded hover:bg transition"
+              className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -702,7 +721,7 @@ export default function ManageProducts() {
         >
           {filteredProducts.map((prod, index) => (
             <motion.div
-              key={prod.id}
+              key={prod.uuid || prod.id}
               className="border rounded-xl p-4 relative flex flex-col items-center shadow hover:shadow-lg transition"
               variants={cardVariants}
               whileHover="hover"
@@ -733,42 +752,37 @@ export default function ManageProducts() {
                 {prod.name}
               </motion.h2>
 
-              {/* Brand */}
-              {prod.brand && (
-                <motion.p
-                  className="text-sm text-gray-500 text-center mb-2"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.1 + 0.15 }}
-                >
-                  {prod.brand}
-                </motion.p>
-              )}
-
-              {/* Category & Sizes */}
               <motion.div
-                className="text-xs text-gray-400 text-center mb-2"
+                className="text-center mb-2"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.1 + 0.17 }}
+                transition={{ duration: 0.3, delay: index * 0.1 + 0.15 }}
               >
-                {prod.type && <span className="capitalize">{prod.type}</span>}
-                {prod.sizes && prod.sizes.length > 0 && (
-                  <>
-                    {prod.type && " • "}
-                    {prod.sizes.join(", ")}
-                  </>
-                )}
+                {prod.brand && <p className="text-gray-500 text-sm font-medium">{prod.brand}</p>}
+                <p className="text-gray-700 font-medium">{prod.price} LE</p>
+                {prod.newprice && <p className="text-red-500 font-medium">Sale: {prod.newprice} LE</p>}
               </motion.div>
 
               <motion.div
-                className="text-center mb-3"
+                className="text-center mb-2"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: index * 0.1 + 0.2 }}
               >
-                <p className="text-gray-600 font-medium">{prod.price} LE</p>
-                {prod.newprice && <p className="text-gray-500 font-medium">Sale: {prod.newprice} LE</p>}
+                {prod.type && (
+                  <p className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full inline-block mb-1">
+                    {getCategoryDisplayName(prod.type)}
+                  </p>
+                )}
+                {prod.sizes && prod.sizes.length > 0 && (
+                  <div className="flex flex-wrap gap-1 justify-center">
+                    {prod.sizes.map((size, i) => (
+                      <span key={i} className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
+                        {size}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </motion.div>
 
               <motion.div 
@@ -779,7 +793,7 @@ export default function ManageProducts() {
               >
                 <motion.button
                   onClick={() => openEditModal(prod)}
-                  className="px-3 py-1 bg  text-white rounded transition hover:bg "
+                  className="px-3 py-1 bg-red-600 text-white rounded transition hover:bg-red-700"
                   variants={buttonVariants}
                   initial="idle"
                   whileHover="hover"
@@ -789,7 +803,7 @@ export default function ManageProducts() {
                 </motion.button>
                 <motion.button
                   onClick={() => showDeleteConfirmation(prod)}
-                  className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition"
+                  className="px-3 py-1 bg-gray-600 text-white rounded hover:bg-gray-700 transition"
                   variants={buttonVariants}
                   initial="idle"
                   whileHover="hover"
@@ -834,7 +848,7 @@ export default function ManageProducts() {
                   Are you sure you want to delete
                 </p>
                 <p className="font-semibold text-gray-800">"{productToDelete.name}"?</p>
-                <p className="text-sm text mt-2">
+                <p className="text-sm text-red-500 mt-2">
                   This action cannot be undone!
                 </p>
               </motion.div>
@@ -917,7 +931,7 @@ export default function ManageProducts() {
                 value={editName}
                 onChange={(e) => setEditName(e.target.value)}
                 placeholder="Fragrance Name *"
-                className="w-full mb-3 p-3 border rounded-lg focus:outline-none focus:border "
+                className="w-full mb-3 p-3 border rounded-lg focus:outline-none focus:border-red-600"
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3, delay: 0.1 }}
@@ -927,8 +941,8 @@ export default function ManageProducts() {
                 type="number"
                 value={editPrice}
                 onChange={(e) => setEditPrice(e.target.value)}
-                placeholder="Price *"
-                className="w-full mb-3 p-3 border rounded-lg focus:outline-none focus:border "
+                placeholder="Price (LE) *"
+                className="w-full mb-3 p-3 border rounded-lg focus:outline-none focus:border-red-600"
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3, delay: 0.2 }}
@@ -938,8 +952,8 @@ export default function ManageProducts() {
                 type="number"
                 value={editNewPrice}
                 onChange={(e) => setEditNewPrice(e.target.value)}
-                placeholder="Sale Price (Optional)"
-                className="w-full mb-4 p-3 border rounded-lg focus:outline-none focus:border "
+                placeholder="Sale Price (LE) - optional"
+                className="w-full mb-3 p-3 border rounded-lg focus:outline-none focus:border-red-600"
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3, delay: 0.3 }}
@@ -948,19 +962,21 @@ export default function ManageProducts() {
               {/* Brand */}
               <motion.div 
                 className="mb-4"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3, delay: 0.4 }}
               >
-                <h3 className="text-sm font-semibold mb-2">Brand:</h3>
-                <select
-                  value={editBrand}
-                  onChange={(e) => setEditBrand(e.target.value)}
-                  className="w-full p-3 border rounded-lg focus:outline-none focus:border "
+                <select 
+                  value={editBrand} 
+                  onChange={(e) => setEditBrand(e.target.value)} 
+                  className="w-full p-3 border rounded-lg focus:outline-none focus:border-red-600" 
+                  required
                 >
-                  <option value="">Select Brand</option>
-                  {brandOptions.map((brand) => (
-                    <option key={brand} value={brand}>{brand}</option>
+                  <option value="">Select Brand *</option>
+                  {brandOptions.map((brandOption) => (
+                    <option key={brandOption} value={brandOption}>
+                      {brandOption}
+                    </option>
                   ))}
                 </select>
               </motion.div>
@@ -970,23 +986,28 @@ export default function ManageProducts() {
                 className="mb-4"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: 0.45 }}
+                transition={{ duration: 0.3, delay: 0.5 }}
               >
-                <h3 className="text-sm font-semibold mb-2">Category *</h3>
-                <div className="flex gap-3">
-                  {typeOptions.map(option => (
-                    <button
-                      key={option}
+                <h3 className="text-sm font-semibold mb-2">Category *:</h3>
+                <div className="flex flex-wrap gap-2">
+                  {typeOptions.map((t) => (
+                    <motion.button
+                      key={t}
                       type="button"
-                      onClick={() => setEditType(option)}
-                      className={`px-4 py-2 rounded-md capitalize transition-colors ${
-                        editType === option 
-                          ? 'bg  text-white' 
-                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                      onClick={() => setEditType(t)}
+                      className={`px-4 py-2 rounded-full font-medium transition-all ${
+                        editType === t 
+                          ? "bg-red-600 text-white shadow-lg" 
+                          : "bg-gray-100 text-gray-700 hover:bg-red-100 hover:text-red-700"
                       }`}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.2 }}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
                     >
-                      {option}
-                    </button>
+                      {t === 'master' ? 'Master-Box' : t.charAt(0).toUpperCase() + t.slice(1)}
+                    </motion.button>
                   ))}
                 </div>
               </motion.div>
@@ -996,23 +1017,28 @@ export default function ManageProducts() {
                 className="mb-4"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: 0.5 }}
+                transition={{ duration: 0.3, delay: 0.6 }}
               >
-                <h3 className="text-sm font-semibold mb-2">Sizes *</h3>
+                <h3 className="text-sm font-semibold mb-2">Sizes *:</h3>
                 <div className="flex flex-wrap gap-2">
-                  {sizeOptions.map(size => (
-                    <button
+                  {sizeOptions.map((size, idx) => (
+                    <motion.button
                       key={size}
                       type="button"
-                      onClick={() => handleSizeChange(size)}
-                      className={`px-3 py-2 rounded-md text-sm transition-colors ${
-                        editSizes.includes(size)
-                          ? 'bg  text-white'
-                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                      onClick={() => toggleSize(size)}
+                      className={`px-3 py-1 rounded border text-sm transition ${
+                        editSizes.includes(size) 
+                          ? "bg-red-600 text-white border-red-600" 
+                          : "bg-white text-gray-700 border-gray-300 hover:border-red-600"
                       }`}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.2, delay: idx * 0.02 }}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
                     >
                       {size}
-                    </button>
+                    </motion.button>
                   ))}
                 </div>
               </motion.div>
@@ -1022,7 +1048,7 @@ export default function ManageProducts() {
                 className="mb-6"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: 0.55 }}
+                transition={{ duration: 0.3, delay: 0.7 }}
               >
                 <h3 className="text-sm font-semibold mb-3">Images:</h3>
                 
@@ -1033,14 +1059,14 @@ export default function ManageProducts() {
                       <div key={idx} className="relative group">
                         <Image
                           src={img}
-                          alt={`Product ${idx + 1}`}
+                          alt={`Fragrance ${idx + 1}`}
                           width={120}
                           height={120}
                           className="rounded object-cover w-full h-24"
                         />
                         <button
                           onClick={() => removeImage(idx)}
-                          className="absolute -top-2 -right-2 bg text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 transition"
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 transition"
                         >
                           ×
                         </button>
@@ -1050,7 +1076,7 @@ export default function ManageProducts() {
                 )}
 
                 {/* Upload New Images */}
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border  transition">
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-red-600 transition">
                   <input
                     type="file"
                     accept="image/*"
@@ -1062,18 +1088,18 @@ export default function ManageProducts() {
                   />
                   <label 
                     htmlFor="image-upload" 
-                    className={`cursor-pointer text  hover:text  font-medium ${
+                    className={`cursor-pointer text-red-600 hover:text-red-700 font-medium ${
                       uploadingImages ? 'opacity-50 cursor-not-allowed' : ''
                     }`}
                   >
                     {uploadingImages ? (
                       <span className="flex items-center justify-center gap-2">
                         <motion.div
-                          className="w-4 h-4   border-t-transparent rounded-full"
+                          className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full"
                           variants={loadingVariants}
                           animate="animate"
                         />
-                        Uploading...
+                        {message.includes("Processing") ? "Processing..." : "Uploading..."}
                       </span>
                     ) : (
                       'Upload Images'
@@ -1091,7 +1117,7 @@ export default function ManageProducts() {
                 className="flex justify-end gap-3"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: 0.6 }}
+                transition={{ duration: 0.3, delay: 0.8 }}
               >
                 <motion.button
                   onClick={closeEditModal}
@@ -1105,14 +1131,14 @@ export default function ManageProducts() {
                 </motion.button>
                 <motion.button
                   onClick={handleSaveEdit}
-                  className="px-4 py-2 bg text-white rounded hover:bg transition disabled:opacity-50"
+                  className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition disabled:opacity-50"
                   variants={buttonVariants}
                   initial="idle"
                   whileHover="hover"
                   whileTap="tap"
                   disabled={uploadingImages}
                 >
-                  {uploadingImages ? 'Uploading...' : 'Save Changes'}
+                  {uploadingImages ? 'Processing...' : 'Save Changes'}
                 </motion.button>
               </motion.div>
             </motion.div>
