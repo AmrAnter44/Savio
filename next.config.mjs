@@ -6,22 +6,22 @@ const nextConfig = {
   // ✅ Image optimization settings
   images: {
     domains: [
-      "lblljhoouydfvekihqka.supabase.co", // Your Supabase domain
-      "dfurfmrwpyotjfrryatn.supabase.co"  // Backup domain if used
+      "lblljhoouydfvekihqka.supabase.co" // Your Supabase domain
+// Backup domain if used
     ],
     // ✅ Add formats for better performance
-    formats: ['image/webp', 'image/avif'],
+
     // ✅ Enable optimization
     minimumCacheTTL: 60,
   },
 
   // ✅ SSG and Performance optimizations
-  experimental: {
+
     // ✅ Enable static generation optimizations
     optimizeCss: true,
     // ✅ Optimize server components
     serverComponentsExternalPackages: ['@supabase/supabase-js'],
-  },
+
 
   // ✅ Static generation settings
   trailingSlash: false,
