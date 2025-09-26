@@ -1,131 +1,102 @@
-// app/store/page.jsx
+// app/Store.jsx - Proper SSG for Next.js 15 ✅
 import StoreSSG from "../app/StoreSSG"
-import { supabase } from "@/lib/supabaseClient"
+import { getAllProducts, getSaleProducts, getProductCategories } from "@/lib/productService"
 
 /**
- * Get all products with error handling
+ * ✅ FIXED: Proper SSG functions for Next.js 15
  */
-async function getAllProducts(buildMode = true) {
+async function getAllProductsSSG() {
   try {
-    const { data, error } = await supabase
-      .from("products")
-      .select("*")
-      .order("id", { ascending: true })
-      
-    if (error) throw error
-    return data || []
+    console.log('🏗️ SSG Build: Fetching all products from Supabase...')
+    const startTime = Date.now()
+    
+    // ✅ Force fresh data from Supabase (no cache)
+    const products = await getAllProducts(true, true) // forceRefresh=true, buildMode=true
+    
+    const endTime = Date.now()
+    console.log(`⏱️ Products fetch took ${endTime - startTime}ms`)
+    console.log(`📦 SSG: Loaded ${products.length} products`)
+    
+    return products || []
   } catch (error) {
-    console.error("Error fetching products:", error)
+    console.error("❌ SSG Error fetching products:", error)
+    console.log("🔄 SSG will use fallback data")
     return []
   }
 }
 
-/**
- * Get sale products (products with newprice)
- */
-async function getSaleProducts(limit = 4, buildMode = true) {
+async function getSaleProductsSSG(limit = 4) {
   try {
-    const { data, error } = await supabase
-      .from("products")
-      .select("*")
-      .not("newprice", "is", null)
-      .gt("newprice", 0)
-      .order("id", { ascending: false })
-      .limit(limit)
-      
-    if (error) throw error
-    return data || []
+    console.log('🏗️ SSG Build: Fetching sale products...')
+    const products = await getSaleProducts(limit, true) // buildMode=true
+    console.log(`💰 SSG: Found ${products.length} sale products`)
+    return products || []
   } catch (error) {
-    console.error("Error fetching sale products:", error)
+    console.error("❌ SSG Error fetching sale products:", error)
     return []
   }
 }
 
-/**
- * Get product categories
- */
-async function getProductCategories(buildMode = true) {
+async function getProductCategoriesSSG() {
   try {
-    // Get unique types from products
-    const { data: products, error } = await supabase
-      .from("products")
-      .select("type")
-      
-    if (error) throw error
-    
-    const uniqueTypes = [...new Set(products?.map(p => p.type).filter(Boolean))] || []
-    
-    // Create category data with proper mapping
-    const categoryMapping = {
-      women: {
-        key: "women",
-        name: "Women",
-        description: "Elegant fragrances for women",
-        image: "/women.jpg"
-      },
-      men: {
-        key: "men", 
-        name: "Men",
-        description: "Bold scents for men",
-        image: "/men.jpg"
-      },
-      master: {
-        key: "Box",
-        name: "Master-box", 
-        description: "Premium fragrance collections",
-        image: "/master.jpg"
-      }
-    }
-    
-    // Return only categories that exist in products
-    const categories = uniqueTypes
-      .map(type => categoryMapping[type])
-      .filter(Boolean)
-    
-    return categories
+    console.log('🏗️ SSG Build: Fetching categories...')
+    const categories = await getProductCategories(true) // buildMode=true
+    console.log(`📂 SSG: Generated ${categories.length} categories`)
+    return categories || []
   } catch (error) {
-    console.error("Error fetching categories:", error)
+    console.error("❌ SSG Error fetching categories:", error)
     return [
-      {
-        key: "women",
-        name: "Women",
-        description: "Elegant fragrances for women",
-        image: "/women.jpg"
-      },
-      {
-        key: "Box", 
-        name: "Master-box",
-        description: "Premium fragrance collections",
-        image: "/master.jpg"
-      },
-      {
-        key: "men", 
-        name: "Men",
-        description: "Bold scents for men",
-        image: "/men.jpg"
-      }
+      { key: "women", name: "Women", description: "Elegant fragrances for women", image: "/women.jpg", count: 0 },
+      { key: "men", name: "Men", description: "Bold scents for men", image: "/men.jpg", count: 0 },
+      { key: "Box", name: "Master-Box", description: "Premium fragrance collections", image: "/master.jpg", count: 0 }
     ]
   }
 }
 
 /**
- * Store Page - Static Generation with Error Handling
+ * ✅ FIXED: Store Page with proper SSG for Next.js 15
  */
 export default async function StorePage() {
+  console.log('🏪 Starting SSG build for Store page...')
+  console.log('🌍 Environment:', process.env.NODE_ENV)
+  console.log('📅 Build time:', new Date().toISOString())
+  
   try {
-    console.log('🏪 Building fragrance store page...')
+    const buildStartTime = Date.now()
     
-    // Fetch data at build time
-    const [allProducts, saleProducts, categories] = await Promise.all([
-      getAllProducts(true),
-      getSaleProducts(4, true),
-      getProductCategories(true)
+    // ✅ Fetch all data in parallel with timeout
+    const dataPromise = Promise.all([
+      getAllProductsSSG(),
+      getSaleProductsSSG(4),
+      getProductCategoriesSSG()
     ])
-
-    console.log(`🏪 Store page built with:`)
-    console.log(`   - Total products: ${allProducts.length}`)
-    console.log(`   - Sale products: ${saleProducts.length}`)
-    console.log(`   - Categories: ${categories.length}`)
+    
+    // ✅ Add timeout to prevent hanging builds
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('SSG build timeout after 30 seconds')), 30000)
+    )
+    
+    const [allProducts, saleProducts, categories] = await Promise.race([
+      dataPromise,
+      timeoutPromise
+    ])
+    
+    const buildEndTime = Date.now()
+    const buildDuration = buildEndTime - buildStartTime
+    
+    console.log(`🏪 SSG Store page built successfully in ${buildDuration}ms:`)
+    console.log(`   📦 Total products: ${allProducts.length}`)
+    console.log(`   💰 Sale products: ${saleProducts.length}`)
+    console.log(`   📂 Categories: ${categories.length}`)
+    console.log(`   ⚡ Build performance: ${buildDuration < 5000 ? 'FAST' : buildDuration < 15000 ? 'GOOD' : 'SLOW'}`)
+    
+    // ✅ Log sample data for verification
+    if (allProducts.length > 0) {
+      console.log('📋 Sample products:')
+      allProducts.slice(0, 3).forEach((product, i) => {
+        console.log(`   ${i + 1}. ${product.name} - ${product.price} LE`)
+      })
+    }
 
     return (
       <div className="min-h-screen">
@@ -138,15 +109,51 @@ export default async function StorePage() {
     )
     
   } catch (error) {
-    console.error('❌ Store page build error:', error)
+    console.error('❌ SSG Store page build failed:', error)
+    console.log('🔄 Using fallback data for SSG')
     
-    // Provide fallback UI with empty data
+    // ✅ Provide meaningful fallback
+    const fallbackProducts = [
+      {
+        id: "build-fallback-1",
+        uuid: "build-fallback-1",
+        name: "Build Error - Demo Product 1",
+        price: 850,
+        newprice: 699,
+        type: "women",
+        brand: "Demo Brand",
+        description: "Demo Brand", 
+        pictures: ["/images/placeholder-fragrance.jpg"],
+        sizes: ["50ml", "100ml"],
+        colors: []
+      },
+      {
+        id: "build-fallback-2", 
+        uuid: "build-fallback-2",
+        name: "Build Error - Demo Product 2",
+        price: 920,
+        newprice: null,
+        type: "men",
+        brand: "Demo Brand",
+        description: "Demo Brand",
+        pictures: ["/images/placeholder-fragrance.jpg"], 
+        sizes: ["100ml", "150ml"],
+        colors: []
+      }
+    ]
+
+    const fallbackCategories = [
+      { key: "women", name: "Women", description: "Elegant fragrances for women", image: "/women.jpg", count: 1 },
+      { key: "men", name: "Men", description: "Bold scents for men", image: "/men.jpg", count: 1 },
+      { key: "Box", name: "Master-Box", description: "Premium fragrance collections", image: "/master.jpg", count: 0 }
+    ]
+
     return (
       <div className="min-h-screen">
         <StoreSSG
-          initialProducts={[]}
-          initialSaleProducts={[]}
-          initialCategories={[]}
+          initialProducts={fallbackProducts}
+          initialSaleProducts={[fallbackProducts[0]]} // First product as sale
+          initialCategories={fallbackCategories}
         />
       </div>
     )
@@ -154,7 +161,15 @@ export default async function StorePage() {
 }
 
 /**
- * Metadata for SEO
+ * ✅ CRITICAL: Next.js 15 SSG Configuration
+ */
+export const dynamic = 'force-static'        // ✅ Force static generation
+export const revalidate = false              // ✅ Never auto-revalidate
+export const fetchCache = 'force-cache'      // ✅ Force caching
+export const preferredRegion = 'auto'        // ✅ Auto region selection
+
+/**
+ * ✅ Enhanced metadata with build info
  */
 export const metadata = {
   title: "Our Fragrance Collection - Premium Perfumes & Scents",
@@ -164,7 +179,6 @@ export const metadata = {
     title: "Our Fragrance Collection - Premium Perfumes & Scents",
     description: "Discover premium perfumes and captivating scents from our curated collection.",
     type: "website",
-    url: "https://your-domain.com/store",
     images: [
       {
         url: "/store-og-image.jpg",
@@ -173,12 +187,16 @@ export const metadata = {
         alt: "Premium Fragrance Collection"
       }
     ]
-  }
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
 }
-
-/**
- * Cache settings for optimal performance
- */
-export const dynamic = 'force-dynamic'
-export const revalidate = 0
-export const fetchCache = 'default-cache'
