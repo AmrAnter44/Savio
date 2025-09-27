@@ -275,7 +275,7 @@ export default function StoreSSG({
                   onMouseLeave={() => setHoveredId(null)}
                 >
                   <Link href={`/product/${product.id}`} className="block">
-                    <div className="group bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer">
+                    <div className="group bg-white rounded-xl overflow-hidden  transition-all duration-300 cursor-pointer">
                       <div className="absolute top-3 left-3 text-white bg px-3 py-1 rounded-full text-xs font-bold z-10 flex items-center gap-1">
                         {getDiscountPercentage(product.price, product.newprice)}% OFF
                       </div>
@@ -284,10 +284,10 @@ export default function StoreSSG({
                         <ProductImage
                           product={product}
                           isHovered={hoveredId === `sale-${product.id}`}
-                          className="object-cover transition-transform duration-700 group-hover:scale-110"
+                          className="object-cover transition-transform duration-700 group-hover:scale"
                           priority={index < 2}
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                       </div>
 
                       <div className="p-4">
@@ -337,9 +337,7 @@ export default function StoreSSG({
                   return product.type === "men"
                 } else if (category.key === "Box") {
                   return product.type === "master"
-                } else {
-                  return product.type === category.key
-                }
+                } 
               })
               
               return (
@@ -348,7 +346,7 @@ export default function StoreSSG({
                   variants={categoryVariants}
                   whileHover={{ scale: 1.02, y: -4 }}
                   whileTap={{ scale: 0.98 }}
-                  className="bg-gradient-to-br cursor-pointer p-8 text-center relative overflow-hidden rounded-2xl hover:shadow-xl transition-all duration-300 text-white min-h-[300px] flex items-center justify-center"
+                  className="bg-gradient-to-br cursor-pointer p-8 text-center relative overflow-hidden rounded-2xl  transition-all duration-300 text-white min-h-[300px] flex items-center justify-center"
                   onClick={() => handleCategoryClick(category.key)}
                   style={{
                     backgroundImage: category.image ? `linear-gradient(135deg, rgba(0,0,0,0.4), rgba(0,0,0,0.6)), url(${category.image})` : undefined,
@@ -362,8 +360,7 @@ export default function StoreSSG({
                   
                   <div className="relative z-10">
                     <h3 className="text-3xl font-bold mb-3 capitalize text-white">{category.name}</h3>
-                    <p className="text-lg opacity-90 mb-6">{category.description}</p>
-                    <p className="text-sm opacity-80">{categoryProducts.length} products</p>
+
                   </div>
                   
                   {typeFilter === category.key && (
@@ -383,7 +380,7 @@ export default function StoreSSG({
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="bg-white rounded-xl shadow-sm p-6 mb-8 border border-gray-200"
+            className="bg-white rounded-xl  p-6 mb-8 border border-gray-200"
           >
             {/* Active Category Display */}
             {typeFilter && (
@@ -530,7 +527,7 @@ export default function StoreSSG({
                 onMouseLeave={() => setHoveredId(null)}
               >
                 <Link href={`/product/${product.id}`} className="block">
-                  <div className="group bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer">
+                  <div className="group bg-white rounded-xl overflow-hidden  transition-all duration-300 cursor-pointer">
                     <div className="relative overflow-hidden h-60 md:h-72 lg:h-96 bg-gray-50">
                       <ProductImage
                         product={product}

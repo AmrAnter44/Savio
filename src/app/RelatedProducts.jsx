@@ -49,27 +49,7 @@ export default function RelatedProducts({ currentProduct }) {
   }, [currentProduct])
 
   // If no related products, don't render anything
-  if (related.length === 0) {
-    return (
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-        className="mt-16 mx-auto"
-      >
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">Related Products</h2>
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-            <p className="text-blue-800">
-              <strong>📄 Static Data Mode:</strong> Related products are loaded during build time only.
-              <br />
-              Use Dashboard → Update Website to refresh related products.
-            </p>
-          </div>
-        </div>
-      </motion.div>
-    )
-  }
+
 
   // Calculate discount percentage
   const getDiscountPercentage = (originalPrice, salePrice) => {

@@ -69,7 +69,10 @@ async function fetchAllStoreDataISR() {
 }
 
 function generateCategoriesFromProducts(products) {
-  const uniqueTypes = [...new Set(products.map(p => p.type).filter(Boolean))]
+const uniqueTypes = [
+  ...new Set(products.map(p => p.type).filter(type => type && type !== "unisex"))
+];
+
   
   const categoryMapping = {
     "women": {
@@ -87,7 +90,6 @@ function generateCategoriesFromProducts(products) {
       description: "Premium fragrance collections", 
       image: "/master.jpg"
     },
-
   }
 
   return uniqueTypes.map(type => {
@@ -178,33 +180,7 @@ export default async function StorePage() {
   console.log(`   🔄 Next auto-update: in 24 hours`)
 
   return (
-    <div className="min-h-screen">
-      {/* 🔄 ISR Status Notice */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="bg-blue-50 border-l-4 border-blue-400 p-4 m-4">
-          <div className="flex">
-            <div className="ml-3">
-              <p className="text-sm text-blue-700">
-                <strong>🔄 ISR Mode Active:</strong> صفر استعلامات على Supabase في runtime!
-                <br />
-                <strong>🕐 آخر تحديث:</strong> {new Date(storeData.lastBuilt).toLocaleString('ar-EG')}
-                <br />
-                <strong>📊 مصدر البيانات:</strong> {storeData.source === 'database' ? 'قاعدة البيانات' : 'حالة طوارئ'}
-                <br />
-                <strong>🔄 التحديث التالي:</strong> تلقائياً خلال 24 ساعة
-                <br />
-                <strong>⚡ الأداء:</strong> سرعة فائقة - بدون استعلامات
-                {storeData.stats && (
-                  <>
-                    <br />
-                    <strong>📈 إحصائيات:</strong> {storeData.stats.totalProducts} منتج، {storeData.stats.saleProducts} عرض، {storeData.stats.categories} فئة
-                  </>
-                )}
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
+    <div>
 
       {/* ISR Data Status */}
       <div className="hidden" data-isr-info={JSON.stringify({
