@@ -4,9 +4,9 @@ import { useState, useMemo, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
-import { FaFilter, FaFilterCircleXmark, FaSpinner, FaFire } from "react-icons/fa6"
+import { FaFilter, FaFilterCircleXmark, FaFire } from "react-icons/fa6"
 
-// Animation variants - مبسطة للأداء
+// Animation variants - same as before
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -57,14 +57,17 @@ const saleVariants = {
 }
 
 /**
- * Fragrance Store Component محسن للـ SSG بدون Hydration Issues
+ * ✅ FIXED: Store component that NEVER calls APIs
+ * Uses ONLY the static data passed as props
  */
 export default function StoreSSG({ 
   initialProducts = [], 
   initialSaleProducts = [], 
   initialCategories = [] 
 }) {
-  // States للفلاتر
+  // 🔒 CRITICAL: Remove all API-related state and functions
+  // Only use the initial data passed from SSG
+  
   const [hoveredId, setHoveredId] = useState(null)
   const [typeFilter, setTypeFilter] = useState("")
   const [brandFilter, setBrandFilter] = useState("")
@@ -75,13 +78,17 @@ export default function StoreSSG({
   const [showFilters, setShowFilters] = useState(false)
   const [sortBy, setSortBy] = useState("newest")
 
-  console.log(`🏪 StoreSSG rendered with ${initialProducts.length} fragrance products`)
+  console.log(`🏪 StoreSSG rendered with ${initialProducts.length} products (STATIC DATA ONLY)`)
 
-  // Product Image Component مع fallback محسن بدون hydration issues
+  // 🔒 REMOVED: All fetch functions, API calls, and dynamic data loading
+  // The component now works PURELY with the props passed from SSG
+
+  // Product Image Component - no changes needed
   const ProductImage = ({ product, isHovered, className, priority = false }) => {
     const [imageSrc, setImageSrc] = useState(product.pictures?.[0] || "/placeholder.png")
     const [imageError, setImageError] = useState(false)
 
+    // Update image on hover
     useEffect(() => {
       if (isHovered && product.pictures?.[1]) {
         setImageSrc(product.pictures[1])
@@ -110,30 +117,25 @@ export default function StoreSSG({
     )
   }
 
-  // Get all unique brands for filtering
+  // Get brands from STATIC data only
   const getAllBrands = () => {
     return [...new Set(initialProducts.map(p => p.description).filter(Boolean))]
   }
 
   const brands = getAllBrands()
 
-  // Enhanced filtering and sorting with special category logic
+  // 🔒 FIXED: Filtering works on STATIC data only
   const filteredProducts = useMemo(() => {
     let filtered = initialProducts.filter((product) => {
-      // Handle type filtering with special cases
       let typeMatch = true
       if (typeFilter) {
         if (typeFilter === "women") {
-          // Women category includes women products only
           typeMatch = product.type === "women"
         } else if (typeFilter === "men") {
-          // Men category includes men products only
           typeMatch = product.type === "men"
         } else if (typeFilter === "Box") {
-          // Master-box category includes master products
           typeMatch = product.type === "master"
         } else {
-          // Default exact match for other categories
           typeMatch = product.type === typeFilter
         }
       }
@@ -175,19 +177,15 @@ export default function StoreSSG({
 
   const handleCategoryClick = (categoryKey) => {
     setTypeFilter(categoryKey)
-    // Scroll to products section
     document.getElementById('products-section')?.scrollIntoView({ 
       behavior: 'smooth' 
     })
   }
 
-  // Calculate discount percentage
   const getDiscountPercentage = (originalPrice, salePrice) => {
     return Math.round(((originalPrice - salePrice) / originalPrice) * 100)
   }
 
-  // إزالة الـ loading state المسبب للـ hydration mismatch
-  // Show content directly بدلاً من الـ mounted check
   return (
     <motion.div 
       initial={{ opacity: 0 }}
@@ -196,6 +194,22 @@ export default function StoreSSG({
       className="min-h-screen"
     >
       <div className="max-w-7xl mx-auto px-4 py-8 mt-20">
+        {/* 🔒 Static Data Notice for development */}
+        {process.env.NODE_ENV === 'development' && initialProducts.length === 0 && (
+          <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-8">
+            <div className="flex">
+              <div className="ml-3">
+                <p className="text-sm text-yellow-700">
+                  <strong>📄 No Products in Static Data:</strong> 
+                  Go to Dashboard → Update Website to load products.
+                  <br />
+                  <strong>Current mode:</strong> Static data only (no API calls)
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Header */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -230,7 +244,7 @@ export default function StoreSSG({
           </div>
         </motion.div>
 
-        {/* Sale Section */}
+        {/* Sale Section - STATIC data only */}
         {initialSaleProducts.length > 0 && (
           <motion.div 
             initial="hidden"
@@ -247,7 +261,6 @@ export default function StoreSSG({
                 <span className="text-lg font-bold text-white">SALE UP TO 50% OFF</span>
                 <FaFire className="text-xl text-white" />
               </div>
-
               <p className="text-gray-600">Limited time offers on selected fragrances</p>
             </motion.div>
             
@@ -263,12 +276,10 @@ export default function StoreSSG({
                 >
                   <Link href={`/product/${product.id}`} className="block">
                     <div className="group bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer">
-                      {/* Hot Deal Badge */}
                       <div className="absolute top-3 left-3 text-white bg px-3 py-1 rounded-full text-xs font-bold z-10 flex items-center gap-1">
                         {getDiscountPercentage(product.price, product.newprice)}% OFF
                       </div>
 
-                      {/* Image Container */}
                       <div className="relative overflow-hidden h-60 lg:h-96">
                         <ProductImage
                           product={product}
@@ -276,24 +287,20 @@ export default function StoreSSG({
                           className="object-cover transition-transform duration-700 group-hover:scale-110"
                           priority={index < 2}
                         />
-                        {/* Gradient Overlay */}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                       </div>
 
-                      {/* Product Info */}
                       <div className="p-4">
                         <h3 className="font-semibold mb-2 line-clamp-2 text-gray-900">
                           {product.name}
                         </h3>
 
-                        {/* Brand */}
                         {product.description && (
                           <p className="text-sm text-gray-500 mb-2">
                             {product.description}
                           </p>
                         )}
 
-                        {/* Price */}
                         <div className="flex items-center gap-2">
                           <span className="text-lg font-bold text">
                             {product.newprice} LE
@@ -311,7 +318,7 @@ export default function StoreSSG({
           </motion.div>
         )}
 
-        {/* Category Sections */}
+        {/* Category Sections - STATIC data only */}
         <motion.div 
           initial="hidden"
           animate="visible"
@@ -322,7 +329,7 @@ export default function StoreSSG({
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {initialCategories.map((category) => {
-              // Calculate category products with same logic as filtering
+              // Calculate category products from STATIC data
               const categoryProducts = initialProducts.filter(product => {
                 if (category.key === "women") {
                   return product.type === "women"
@@ -350,18 +357,15 @@ export default function StoreSSG({
                     backgroundRepeat: 'no-repeat'
                   }}
                 >
-                  {/* Background decoration */}
                   <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full -translate-y-16 translate-x-16"></div>
                   <div className="absolute bottom-0 left-0 w-24 h-24 bg-white opacity-10 rounded-full translate-y-12 -translate-x-12"></div>
                   
-                  {/* Content */}
                   <div className="relative z-10">
                     <h3 className="text-3xl font-bold mb-3 capitalize text-white">{category.name}</h3>
                     <p className="text-lg opacity-90 mb-6">{category.description}</p>
                     <p className="text-sm opacity-80">{categoryProducts.length} products</p>
                   </div>
                   
-                  {/* Active Filter Indicator */}
                   {typeFilter === category.key && (
                     <div className="absolute top-4 right-4 bg-white text-gray-900 px-3 py-1 rounded-full text-sm font-bold">
                       Active
@@ -373,7 +377,7 @@ export default function StoreSSG({
           </div>
         </motion.div>
 
-        {/* Products Section */}
+        {/* Products Section - STATIC data only */}
         <div id="products-section">
           {/* Filters */}
           <motion.div 
@@ -389,7 +393,6 @@ export default function StoreSSG({
                     <span className="text-sm font-medium text-gray-700">Filtering by:</span>
                     <span className="bg text-white px-3 py-1 rounded-full text-sm font-medium">
                       {initialCategories.find(c => c.key === typeFilter)?.name}
-                      {typeFilter === "Box" && ""}
                     </span>
                   </div>
                   <button
@@ -404,7 +407,6 @@ export default function StoreSSG({
 
             {/* Filter Controls */}
             <div className="flex flex-wrap items-center gap-3 mb-4">
-              {/* Sort Dropdown */}
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
@@ -416,7 +418,6 @@ export default function StoreSSG({
                 <option value="name">Name A-Z</option>
               </select>
               
-              {/* Action Buttons */}
               <div className="ml-auto flex gap-3">
                 <button
                   className="px-4 py-3 bg hover:bg-red-700 rounded-lg text-sm font-medium text-white transition-colors"
@@ -503,7 +504,6 @@ export default function StoreSSG({
               {typeFilter && (
                 <span className="ml-2 text-sm">
                   in <span className="font-semibold">{initialCategories.find(c => c.key === typeFilter)?.name}</span>
-                  {typeFilter === "Box" && " (Master)"}
                 </span>
               )}
               {searchTerm && (
@@ -514,7 +514,7 @@ export default function StoreSSG({
             </p>
           </div>
 
-          {/* Product Grid */}
+          {/* Product Grid - STATIC data only */}
           <motion.div 
             variants={containerVariants}
             initial="hidden"
@@ -531,7 +531,6 @@ export default function StoreSSG({
               >
                 <Link href={`/product/${product.id}`} className="block">
                   <div className="group bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer">
-                    {/* Image Container */}
                     <div className="relative overflow-hidden h-60 md:h-72 lg:h-96 bg-gray-50">
                       <ProductImage
                         product={product}
@@ -540,14 +539,12 @@ export default function StoreSSG({
                         priority={index < 8}
                       />
 
-                      {/* Sale Badge */}
                       {product.newprice && (
                         <div className="absolute top-3 left-3 text-white bg px-3 py-1 rounded-full text-xs font-bold z-10 flex items-center gap-1">
                           {getDiscountPercentage(product.price, product.newprice)}% OFF
                         </div>
                       )}
 
-                      {/* Size Info */}
                       {product.sizes?.length > 0 && (
                         <div className="absolute bottom-3 right-3 bg-black text-white px-2 py-1 rounded text-xs">
                           {product.sizes[0]}
@@ -555,20 +552,17 @@ export default function StoreSSG({
                       )}
                     </div>
 
-                    {/* Product Info */}
                     <div className="p-4">
                       <h3 className="font-medium text-gray-900 mb-2 line-clamp-2">
                         {product.name}
                       </h3>
                       
-                      {/* Brand */}
                       {product.description && (
                         <p className="text-sm text-gray-500 mb-3">
                           {product.description}
                         </p>
                       )}
                       
-                      {/* Price */}
                       <div className="flex items-center justify-between mb-4">
                         {product.newprice ? (
                           <div className="flex items-center gap-2">

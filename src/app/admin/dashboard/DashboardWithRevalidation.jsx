@@ -7,67 +7,6 @@ import { motion, AnimatePresence } from "framer-motion"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabaseClient"
 
-// Animation variants
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      duration: 0.4,
-      ease: "easeOut",
-      staggerChildren: 0.1,
-    },
-  },
-}
-
-const tabVariants = {
-  hidden: { opacity: 0, y: -20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.4, ease: "easeOut" },
-  },
-}
-
-const contentVariants = {
-  hidden: { opacity: 0, x: 20 },
-  visible: {
-    opacity: 1,
-    x: 0,
-    transition: { duration: 0.5, ease: "easeOut" },
-  },
-  exit: {
-    opacity: 0,
-    x: -20,
-    transition: { duration: 0.3, ease: "easeIn" },
-  },
-}
-
-const buttonVariants = {
-  idle: { scale: 1 },
-  active: {
-    scale: 1.05,
-    transition: { duration: 0.2, ease: "easeInOut" },
-  },
-  hover: {
-    scale: 1.02,
-    transition: { duration: 0.2, ease: "easeInOut" },
-  },
-  tap: { scale: 0.98 },
-}
-
-const revalidationVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.4 }
-  }
-}
-
-/**
- * Dashboard محسن مع Manual Revalidation
- */
 export default function DashboardWithRevalidation() {
   const [activeTab, setActiveTab] = useState("add")
   const [loading, setLoading] = useState(true)
@@ -76,7 +15,6 @@ export default function DashboardWithRevalidation() {
   const [cacheInfo, setCacheInfo] = useState(null)
   const router = useRouter()
 
-  // تحقق من authentication
   useEffect(() => {
     async function checkAuth() {
       const { data } = await supabase.auth.getSession()
@@ -90,7 +28,6 @@ export default function DashboardWithRevalidation() {
     checkAuth()
   }, [router])
 
-  // جلب معلومات الcache
   const fetchCacheInfo = async () => {
     try {
       const response = await fetch('/api/revalidate', { method: 'GET' })
@@ -101,14 +38,13 @@ export default function DashboardWithRevalidation() {
     }
   }
 
-  // Manual revalidation للموقع كله
   const handleFullRevalidation = async () => {
     if (revalidating) return
     
     setRevalidating(true)
     
     try {
-      console.log('🔄 Starting full site revalidation...')
+      console.log('🔒 Starting manual website update...')
       
       const response = await fetch('/api/revalidate', {
         method: 'POST',
@@ -117,21 +53,22 @@ export default function DashboardWithRevalidation() {
         },
         body: JSON.stringify({
           action: 'full_update',
-          paths: ['/', '/store'] // الصفحات الأساسية
+          paths: ['/', '/store']
         })
       })
 
       const result = await response.json()
 
       if (result.success) {
-        console.log('✅ Full revalidation successful:', result)
+        console.log('✅ Manual update successful:', result)
         setLastRevalidation(new Date())
-        
-        // Update cache info
         await fetchCacheInfo()
         
-        // Success notification
-        alert('✅ Website updated successfully! Changes are now live.')
+        alert(`✅ Website updated successfully! 
+
+📄 Static data has been refreshed with latest products from database.
+🌐 Changes are now live on the website.
+📊 Updated: ${result.freshProductsCount || 0} products`)
         
       } else {
         console.error('❌ Revalidation failed:', result.error)
@@ -146,7 +83,6 @@ export default function DashboardWithRevalidation() {
     }
   }
 
-  // مسح الcache فقط
   const handleCacheClear = async () => {
     try {
       const response = await fetch('/api/revalidate', { method: 'DELETE' })
@@ -173,14 +109,37 @@ export default function DashboardWithRevalidation() {
   return (
     <motion.div
       className="max-w-6xl mx-auto p-6"
-      initial="hidden"
-      animate="visible"
-      variants={containerVariants}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.4 }}
     >
+      {/* 🔒 STATIC MODE WARNING */}
+      <motion.div 
+        className="bg-gradient-to-r from-blue-900 to-indigo-900 text-white rounded-xl p-6 mb-6"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <div className="flex items-start gap-4">
+          <div className="text-3xl">📄</div>
+          <div className="flex-1">
+            <h3 className="text-xl font-bold mb-2">🔒 Static Data Mode Active</h3>
+            <div className="text-blue-100 text-sm space-y-1">
+              <p>• <strong>Adding/editing products:</strong> Saved to database but NOT visible on website yet</p>
+              <p>• <strong>Website visitors:</strong> See static data only (fast loading)</p>
+              <p>• <strong>To make changes visible:</strong> Click "Update Website" button below</p>
+              <p>• <strong>No automatic updates:</strong> Full manual control over when changes go live</p>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
       {/* Header with Manual Update */}
       <motion.div 
         className="bg-gradient-to-r from-red-900 to-pink-900 text-white rounded-xl p-6 mb-8"
-        variants={revalidationVariants}
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.1 }}
       >
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
@@ -199,9 +158,9 @@ export default function DashboardWithRevalidation() {
             {/* Cache Info */}
             {cacheInfo && (
               <div className="text-sm text-red-100 bg-white/10 rounded-lg p-3">
-                <div>Cache: {cacheInfo.hasCache ? '✅ Active' : '❌ Empty'}</div>
+                <div>Static Data: {cacheInfo.hasCache ? '✅ Available' : '❌ Empty'}</div>
                 {cacheInfo.hasCache && (
-                  <div>{cacheInfo.cacheSize} products cached</div>
+                  <div>{cacheInfo.cacheSize} products in static file</div>
                 )}
               </div>
             )}
@@ -215,10 +174,8 @@ export default function DashboardWithRevalidation() {
                   ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
                   : 'bg-white text-red-900 hover:bg-gray-100'
               }`}
-              variants={buttonVariants}
-              initial="idle"
-              whileHover={!revalidating ? "hover" : {}}
-              whileTap={!revalidating ? "tap" : {}}
+              whileHover={!revalidating ? { scale: 1.02 } : {}}
+              whileTap={!revalidating ? { scale: 0.98 } : {}}
             >
               {revalidating ? (
                 <span className="flex items-center gap-2">
@@ -234,9 +191,8 @@ export default function DashboardWithRevalidation() {
             <motion.button
               onClick={handleCacheClear}
               className="px-4 py-2 text-sm bg-white/20 text-white rounded-lg hover:bg-white/30 transition"
-              variants={buttonVariants}
-              whileHover="hover"
-              whileTap="tap"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
             >
               🗑️ Clear Cache
             </motion.button>
@@ -247,9 +203,10 @@ export default function DashboardWithRevalidation() {
         <div className="mt-4 p-4 bg-white/10 rounded-lg">
           <h3 className="font-semibold mb-2">💡 How it works:</h3>
           <div className="text-sm space-y-1">
-            <p>• Add/Edit/Delete products using the tabs below</p>
-            <p>• Click "Update Website" to make changes live for visitors</p>
-            <p>• The website uses cached data for ultra-fast loading</p>
+            <p>• Add/Edit/Delete products using the tabs below (saved to database)</p>
+            <p>• Products are NOT visible to customers until you update</p>
+            <p>• Click "Update Website" to copy database → static file → live website</p>
+            <p>• Website loads from static file = ultra-fast performance</p>
           </div>
         </div>
       </motion.div>
@@ -257,7 +214,9 @@ export default function DashboardWithRevalidation() {
       {/* Tabs */}
       <motion.div
         className="flex gap-4 mb-6 justify-center items-center"
-        variants={tabVariants}
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.2 }}
       >
         <motion.button
           className={`px-6 py-3 rounded-lg font-semibold transition-colors ${
@@ -266,11 +225,8 @@ export default function DashboardWithRevalidation() {
               : "bg-gray-200 text-gray-800 hover:bg-gray-300"
           }`}
           onClick={() => setActiveTab("add")}
-          variants={buttonVariants}
-          initial="idle"
-          animate={activeTab === "add" ? "active" : "idle"}
-          whileHover="hover"
-          whileTap="tap"
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
         >
           ➕ Add Product
         </motion.button>
@@ -282,11 +238,8 @@ export default function DashboardWithRevalidation() {
               : "bg-gray-200 text-gray-800 hover:bg-gray-300"
           }`}
           onClick={() => setActiveTab("remove")}
-          variants={buttonVariants}
-          initial="idle"
-          animate={activeTab === "remove" ? "active" : "idle"}
-          whileHover="hover"
-          whileTap="tap"
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
         >
           📝 Manage Products
         </motion.button>
@@ -296,10 +249,10 @@ export default function DashboardWithRevalidation() {
       <AnimatePresence mode="wait">
         <motion.div
           key={activeTab}
-          variants={contentVariants}
-          initial="hidden"
-          animate="visible"
-          exit="exit"
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          transition={{ duration: 0.3 }}
         >
           {activeTab === "add" && <AddProduct />}
           {activeTab === "remove" && <RemoveProduct />}
@@ -309,14 +262,17 @@ export default function DashboardWithRevalidation() {
       {/* Footer Instructions */}
       <motion.div 
         className="mt-12 p-6 bg-gray-50 rounded-xl border-l-4 border-red-900"
-        variants={revalidationVariants}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.4 }}
       >
-        <h3 className="font-semibold text-gray-900 mb-3">🎯 Performance Tips:</h3>
+        <h3 className="font-semibold text-gray-900 mb-3">🎯 Static Data Benefits:</h3>
         <div className="text-sm text-gray-700 space-y-2">
-          <p>• This setup minimizes database calls and Vercel function usage</p>
-          <p>• Products are cached in memory for ultra-fast loading</p>
-          <p>• Manual updates ensure data consistency and optimal performance</p>
-          <p>• Perfect for Supabase and Vercel free tiers</p>
+          <p>• <strong>Lightning fast:</strong> Website loads from static files, not database</p>
+          <p>• <strong>Zero database load:</strong> Visitors never hit the database</p>
+          <p>• <strong>Perfect for SSG:</strong> Works with Next.js static generation</p>
+          <p>• <strong>Manual control:</strong> You decide exactly when changes go live</p>
+          <p>• <strong>Reliable:</strong> Website works even if database is down</p>
         </div>
       </motion.div>
     </motion.div>

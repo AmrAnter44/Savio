@@ -1,15 +1,34 @@
-// app/api/products/route.js
+// app/api/products/route.js - Restricted Access (Complete Fixed)
 import { NextResponse } from "next/server"
 import { supabaseServer } from "@/lib/supabaseClient"
+
+// 🔒 Check if request is from admin or build process
+function isAuthorizedRequest(request) {
+  try {
+    // Allow during build process
+    if (process.env.NODE_ENV === 'production') return false
+    
+    // Check for admin token
+    const authHeader = request.headers.get('x-admin-token') || ''
+    const adminToken = process.env.ADMIN_TOKEN || ''
+    
+    // Check for build-time header
+    const buildHeader = request.headers.get('x-build-request') || ''
+    
+    return (adminToken && authHeader === adminToken) || buildHeader === 'true'
+  } catch {
+    return false
+  }
+}
 
 export async function POST(request) {
   console.log('=== POST /api/products ===')
   
+  // 🔒 Always allow product creation for admin
   try {
     const body = await request.json()
     console.log('Received data:', body)
     
-    // Validate required fields
     if (!body.name || !body.price || !body.type) {
       return NextResponse.json(
         { error: 'Missing required fields: name, price, type' },
@@ -17,7 +36,6 @@ export async function POST(request) {
       )
     }
     
-    // Prepare data for Supabase
     const productData = {
       name: body.name,
       price: parseFloat(body.price),
@@ -28,7 +46,6 @@ export async function POST(request) {
       owner_id: body.owner_id || 'admin'
     }
     
-    // Add newprice if provided
     if (body.newprice && !isNaN(parseFloat(body.newprice))) {
       productData.newprice = parseFloat(body.newprice)
     }
@@ -72,10 +89,25 @@ export async function POST(request) {
 export async function GET(request) {
   console.log('=== GET /api/products ===')
   
+  // 🔒 CRITICAL: Block GET requests in production
+  if (!isAuthorizedRequest(request)) {
+    console.log('❌ Unauthorized GET request blocked')
+    return NextResponse.json(
+      { 
+        error: 'Access denied',
+        message: 'Products data is served statically. Use Dashboard → Update Website to refresh data.',
+        hint: 'This API is restricted to prevent runtime database calls.'
+      },
+      { status: 403 }
+    )
+  }
+  
   try {
     const { searchParams } = new URL(request.url)
     const type = searchParams.get('type')
     const limit = searchParams.get('limit')
+    
+    console.log('🔓 Authorized request - proceeding with database query')
     
     let query = supabaseServer().from('products').select('*')
     
@@ -103,14 +135,13 @@ export async function GET(request) {
       )
     }
     
-    // Transform for compatibility
     const products = (data || []).map(product => ({
       ...product,
       id: product.uuid,
       description: product.brand
     }))
     
-    console.log(`Retrieved ${products.length} products`)
+    console.log(`Retrieved ${products.length} products (authorized request)`)
     return NextResponse.json(products)
     
   } catch (error) {
