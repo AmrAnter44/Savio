@@ -27,7 +27,7 @@ const inputVariants = {
 }
 
 /**
- * Add Fragrance Product with Manual Update Messages
+ * Add Fragrance Product with Strict Manual Update Messages
  */
 export default function AddFragranceProduct() {
   const [name, setName] = useState("")
@@ -97,7 +97,7 @@ export default function AddFragranceProduct() {
     if (selectedFiles.length === 0) return
 
     setUploadingImages(true)
-    setMessage("Processing images...")
+    setMessage("جاري معالجة الصور...")
 
     try {
       const resizedFiles = []
@@ -106,13 +106,13 @@ export default function AddFragranceProduct() {
       for (let file of selectedFiles) {
         if (!file.type.startsWith('image/')) {
           console.warn(`Skipping non-image file: ${file.name}`)
-          setMessage(`File ${file.name} is not an image`)
+          setMessage(`الملف ${file.name} ليس صورة`)
           continue
         }
 
         if (file.size > 5242880) {
           console.warn(`File too large: ${file.name}`)
-          setMessage(`File ${file.name} is too large (max 5MB)`)
+          setMessage(`الملف ${file.name} كبير جداً (أقصى حد 5 ميجا)`)
           continue
         }
 
@@ -128,7 +128,7 @@ export default function AddFragranceProduct() {
       setMessage("")
     } catch (error) {
       console.error('Image processing error:', error)
-      setMessage("Error processing images: " + error.message)
+      setMessage("خطأ في معالجة الصور: " + error.message)
     } finally {
       setUploadingImages(false)
       e.target.value = ''
@@ -159,7 +159,7 @@ export default function AddFragranceProduct() {
 
         if (error) {
           console.error('Upload error for', file.name, ':', error)
-          setMessage(`Error uploading ${file.name}: ${error.message}`)
+          setMessage(`خطأ في رفع ${file.name}: ${error.message}`)
           continue
         }
 
@@ -173,7 +173,7 @@ export default function AddFragranceProduct() {
 
       } catch (error) {
         console.error(`Error uploading ${file.name}:`, error)
-        setMessage(`Error uploading ${file.name}: ${error.message}`)
+        setMessage(`خطأ في رفع ${file.name}: ${error.message}`)
         continue
       }
     }
@@ -187,22 +187,22 @@ export default function AddFragranceProduct() {
     setMessage("")
 
     if (!name || !price || !brand || sizes.length === 0 || !type || files.length === 0) {
-      setMessage("Please fill in all required fields.")
+      setMessage("برجاء ملء جميع الحقول المطلوبة.")
       setLoading(false)
       return
     }
 
     try {
-      setMessage("Uploading images...")
+      setMessage("جاري رفع الصور...")
       const pictureUrls = await uploadImages()
 
       if (pictureUrls.length === 0) {
-        setMessage("No images were uploaded successfully. Please try again.")
+        setMessage("لم يتم رفع أي صور بنجاح. برجاء المحاولة مرة أخرى.")
         setLoading(false)
         return
       }
 
-      setMessage("Creating fragrance product...")
+      setMessage("جاري إنشاء المنتج...")
 
       const product = {
         name,
@@ -228,7 +228,7 @@ export default function AddFragranceProduct() {
       if (!contentType || !contentType.includes('application/json')) {
         const text = await res.text()
         console.error('Received non-JSON response:', text)
-        throw new Error('Server returned HTML instead of JSON. Check if API route exists.')
+        throw new Error('السيرفر أرجع HTML بدلاً من JSON. تأكد من وجود API route.')
       }
 
       const result = await res.json()
@@ -250,22 +250,22 @@ export default function AddFragranceProduct() {
         const fileInput = document.querySelector('input[type="file"]')
         if (fileInput) fileInput.value = ''
         
-        setMessage(`✅ "${name}" saved to database successfully!
+        setMessage(`✅ تم حفظ "${name}" في قاعدة البيانات بنجاح!
 
-🚨 IMPORTANT: Go back to Dashboard tab and click "Update Website" button to make this fragrance visible to customers.
+🔒 هام: المنتج محفوظ في قاعدة البيانات لكن لن يظهر للزوار حتى تضغط "تحديث الموقع" من الداشبورد.
 
-The product is saved but NOT live yet - you control when it goes public.`)
+💡 هذا يتيح لك إضافة عدة منتجات ثم نشرها جميعاً مرة واحدة.`)
         
         setTimeout(() => setMessage(""), 15000)
         
       } else {
-        setMessage("Error: " + (result.error || "Error adding fragrance product"))
+        setMessage("خطأ: " + (result.error || "خطأ في إضافة المنتج"))
         setTimeout(() => setMessage(""), 5000)
       }
 
     } catch (err) {
       console.error('Submit error:', err)
-      setMessage("Error: " + err.message)
+      setMessage("خطأ: " + err.message)
       setTimeout(() => setMessage(""), 5000)
     }
 
@@ -286,7 +286,7 @@ The product is saved but NOT live yet - you control when it goes public.`)
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
       >
-        Add New Fragrance
+        إضافة عطر جديد
       </motion.h1>
 
       {/* Manual Update Notice */}
@@ -295,21 +295,21 @@ The product is saved but NOT live yet - you control when it goes public.`)
         variants={inputVariants}
       >
         <h4 className="font-semibold mb-2 flex items-center gap-2">
-          <span>💡</span>
-          Manual Update System Active
+          <span>🔒</span>
+          نظام Manual Update Only مُفعّل
         </h4>
         <ul className="space-y-1 text-xs">
-          <li>• Fragrance will be saved to database</li>
-          <li>• <strong>NOT visible to customers yet</strong></li>
-          <li>• Click "Update Website" in Dashboard to publish</li>
-          <li>• You have full control over when changes go live</li>
+          <li>• العطر سيُحفظ في قاعدة البيانات</li>
+          <li>• <strong>لن يظهر للزوار</strong> حتى تضغط "تحديث الموقع"</li>
+          <li>• يمكنك إضافة عدة منتجات ثم نشرها جميعاً مرة واحدة</li>
+          <li>• هذا يتيح لك التحكم الكامل في وقت النشر</li>
         </ul>
       </motion.div>
 
       {/* Fragrance Name */}
       <motion.input 
         type="text" 
-        placeholder="Fragrance Name *" 
+        placeholder="اسم العطر *" 
         value={name} 
         onChange={(e) => setName(e.target.value)} 
         className="p-3 border rounded-md w-full focus:ring-2 focus:ring-red-500 focus:border-transparent" 
@@ -320,7 +320,7 @@ The product is saved but NOT live yet - you control when it goes public.`)
       {/* Price */}
       <motion.input 
         type="number" 
-        placeholder="Price (LE) *" 
+        placeholder="السعر (جنيه مصري) *" 
         value={price} 
         onChange={(e) => setPrice(e.target.value)} 
         className="p-3 border rounded-md w-full focus:ring-2 focus:ring-red-500 focus:border-transparent" 
@@ -331,7 +331,7 @@ The product is saved but NOT live yet - you control when it goes public.`)
       {/* Sale Price */}
       <motion.input 
         type="number" 
-        placeholder="Sale Price (LE) - optional" 
+        placeholder="سعر التخفيض (اختياري)" 
         value={newprice} 
         onChange={(e) => setNewprice(e.target.value)} 
         className="p-3 border rounded-md w-full focus:ring-2 focus:ring-red-500 focus:border-transparent" 
@@ -346,7 +346,7 @@ The product is saved but NOT live yet - you control when it goes public.`)
           className="p-3 border rounded-md w-full focus:ring-2 focus:ring-red-500 focus:border-transparent" 
           required
         >
-          <option value="">Select Brand *</option>
+          <option value="">اختر البراند *</option>
           {brandOptions.map((brandOption) => (
             <option key={brandOption} value={brandOption}>
               {brandOption}
@@ -357,7 +357,7 @@ The product is saved but NOT live yet - you control when it goes public.`)
 
       {/* Type */}
       <motion.div variants={inputVariants}>
-        <p className="mb-2 font-semibold text-gray-700">Category (required) *:</p>
+        <p className="mb-2 font-semibold text-gray-700">الفئة (مطلوب) *:</p>
         <div className="flex flex-wrap gap-2">
           {typeOptions.map((t) => (
             <motion.button 
@@ -380,7 +380,7 @@ The product is saved but NOT live yet - you control when it goes public.`)
 
       {/* Sizes */}
       <motion.div variants={inputVariants}>
-        <p className="mb-2 font-semibold text-gray-700">Sizes (required) *:</p>
+        <p className="mb-2 font-semibold text-gray-700">الأحجام (مطلوب) *:</p>
         <div className="flex flex-wrap gap-2">
           {sizeOptions.map((size) => (
             <motion.button 
@@ -426,16 +426,16 @@ The product is saved but NOT live yet - you control when it goes public.`)
                   animate={{ rotate: 360 }}
                   transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                 />
-                Processing Images...
+                جاري معالجة الصور...
               </span>
             ) : (
-              '📷 Select Fragrance Images *'
+              '📷 اختر صور العطر *'
             )}
           </label>
           <p className="text-sm text-gray-500 mt-2">
-            Select multiple images (Max 5MB each)<br />
-            Images will be automatically resized to 768x950px<br />
-            You can add more images by selecting again
+            اختر عدة صور (أقصى حد 5 ميجا لكل صورة)<br />
+            سيتم تغيير حجم الصور تلقائياً إلى 768x950 بكسل<br />
+            يمكنك إضافة المزيد من الصور بالاختيار مرة أخرى
           </p>
         </div>
       </motion.div>
@@ -484,10 +484,10 @@ The product is saved but NOT live yet - you control when it goes public.`)
         {message && (
           <motion.div 
             className={`p-4 rounded-lg text-center font-medium whitespace-pre-line ${
-              message.includes("successfully") || message.includes("✅") 
+              message.includes("بنجاح") || message.includes("✅") 
                 ? "text-green-700 bg-green-50 border border-green-200" 
-                : message.includes("Processing") || message.includes("Uploading") || message.includes("Creating")
-                ? "text-red-700 bg-red-50 border border-red-200"
+                : message.includes("جاري") || message.includes("معالجة") || message.includes("رفع")
+                ? "text-blue-700 bg-blue-50 border border-blue-200"
                 : "text-red-700 bg-red-50 border border-red-200"
             }`}
             initial={{ opacity: 0, y: -20 }}
@@ -529,12 +529,12 @@ The product is saved but NOT live yet - you control when it goes public.`)
                   animate={{ rotate: 360 }}
                   transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                 />
-                Adding Fragrance...
+                جاري إضافة العطر...
               </>
             ) : uploadingImages ? (
-              "Processing Images..."
+              "جاري معالجة الصور..."
             ) : (
-              "💾 Save Fragrance to Database"
+              "💾 حفظ في قاعدة البيانات"
             )}
           </motion.span>
         </AnimatePresence>
@@ -548,8 +548,8 @@ The product is saved but NOT live yet - you control when it goes public.`)
         <div className="flex items-start gap-2">
           <span className="text-lg">⚠️</span>
           <div>
-            <div className="font-medium mb-1">Remember:</div>
-            <div>Fragrance will be saved to database but <strong>NOT visible to customers</strong> until you click "Update Website" in the Dashboard.</div>
+            <div className="font-medium mb-1">تذكر:</div>
+            <div>العطر سيُحفظ في قاعدة البيانات لكن <strong>لن يظهر للزوار</strong> حتى تضغط "تحديث الموقع" في الداشبورد.</div>
           </div>
         </div>
       </motion.div>

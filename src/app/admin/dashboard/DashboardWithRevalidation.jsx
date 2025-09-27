@@ -38,13 +38,13 @@ export default function DashboardWithRevalidation() {
     }
   }
 
-  const handleFullRevalidation = async () => {
+  const handleISRRevalidation = async () => {
     if (revalidating) return
     
     setRevalidating(true)
     
     try {
-      console.log('🔒 Starting manual website update...')
+      console.log('🔄 ISR: Triggering manual revalidation...')
       
       const response = await fetch('/api/revalidate', {
         method: 'POST',
@@ -52,32 +52,36 @@ export default function DashboardWithRevalidation() {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          action: 'full_update',
-          paths: ['/', '/store']
+          action: 'isr_revalidate',
+          paths: ['/', '/store'],
+          mode: 'isr'
         })
       })
 
       const result = await response.json()
 
       if (result.success) {
-        console.log('✅ Manual update successful:', result)
+        console.log('✅ ISR revalidation successful:', result)
         setLastRevalidation(new Date())
         await fetchCacheInfo()
         
-        alert(`✅ Website updated successfully! 
+        alert(`✅ تم تحديث الموقع بنجاح! 
 
-📄 Static data has been refreshed with latest products from database.
-🌐 Changes are now live on the website.
-📊 Updated: ${result.freshProductsCount || 0} products`)
+🔄 ISR: البيانات ستُحدث تلقائياً خلال دقائق
+🌐 التغييرات ستظهر للزوار تدريجياً
+📊 تم إعادة بناء الصفحات الثابتة
+⚡ صفر استعلامات على قاعدة البيانات في المستقبل
+
+الموقع الآن يعمل بنظام ISR - تحديث تلقائي كل 24 ساعة!`)
         
       } else {
-        console.error('❌ Revalidation failed:', result.error)
-        alert('❌ Update failed: ' + result.error)
+        console.error('❌ ISR revalidation failed:', result.error)
+        alert('❌ فشل التحديث: ' + (result.error || 'خطأ غير معروف'))
       }
-
+      
     } catch (error) {
-      console.error('❌ Revalidation error:', error)
-      alert('❌ Update failed: ' + error.message)
+      console.error('❌ ISR revalidation error:', error)
+      alert('❌ فشل التحديث: ' + error.message)
     } finally {
       setRevalidating(false)
     }
@@ -90,18 +94,18 @@ export default function DashboardWithRevalidation() {
       
       if (result.success) {
         await fetchCacheInfo()
-        alert('🗑️ Cache cleared successfully!')
+        alert('🗑️ تم مسح الكاش بنجاح! سيتم إعادة البناء في التحديث التالي.')
       }
     } catch (error) {
       console.error('Error clearing cache:', error)
-      alert('❌ Failed to clear cache')
+      alert('❌ فشل في مسح الكاش')
     }
   }
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen text-lg">
-        Checking authentication...
+        جاري التحقق من المصادقة...
       </div>
     )
   }
@@ -113,43 +117,43 @@ export default function DashboardWithRevalidation() {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.4 }}
     >
-      {/* 🔒 STATIC MODE WARNING */}
+      {/* 🔄 ISR MODE */}
       <motion.div 
-        className="bg-gradient-to-r from-blue-900 to-indigo-900 text-white rounded-xl p-6 mb-6"
+        className="bg-gradient-to-r from-green-900 to-emerald-900 text-white rounded-xl p-6 mb-6"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
         <div className="flex items-start gap-4">
-          <div className="text-3xl">📄</div>
+          <div className="text-3xl">🔄</div>
           <div className="flex-1">
-            <h3 className="text-xl font-bold mb-2">🔒 Static Data Mode Active</h3>
-            <div className="text-blue-100 text-sm space-y-1">
-              <p>• <strong>Adding/editing products:</strong> Saved to database but NOT visible on website yet</p>
-              <p>• <strong>Website visitors:</strong> See static data only (fast loading)</p>
-              <p>• <strong>To make changes visible:</strong> Click "Update Website" button below</p>
-              <p>• <strong>No automatic updates:</strong> Full manual control over when changes go live</p>
+            <h3 className="text-xl font-bold mb-2">ISR Mode - أفضل ما في العالمين!</h3>
+            <div className="text-green-100 text-sm space-y-1">
+              <p>• <strong>صفر استعلامات في Runtime:</strong> الموقع يعمل من ملفات ثابتة</p>
+              <p>• <strong>تحديث تلقائي:</strong> البيانات تتحديث كل 24 ساعة تلقائياً</p>
+              <p>• <strong>سرعة فائقة:</strong> زوار الموقع لا ينتظرون أي استعلامات</p>
+              <p>• <strong>تحديث فوري اختياري:</strong> يمكنك تحديث الموقع فوراً عند الحاجة</p>
             </div>
           </div>
         </div>
       </motion.div>
 
-      {/* Header with Manual Update */}
+      {/* Header with ISR Info */}
       <motion.div 
-        className="bg-gradient-to-r from-red-900 to-pink-900 text-white rounded-xl p-6 mb-8"
+        className="bg-gradient-to-r from-blue-900 to-purple-900 text-white rounded-xl p-6 mb-8"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1 }}
       >
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h1 className="text-2xl font-bold mb-2">Admin Dashboard</h1>
-            <p className="text-red-100">
-              Manage products and update the website manually for optimal performance
+            <h1 className="text-2xl font-bold mb-2">لوحة التحكم - ISR Mode</h1>
+            <p className="text-blue-100">
+              إدارة المنتجات مع تحديث تلقائي ذكي
             </p>
             {lastRevalidation && (
-              <p className="text-sm text-red-200 mt-2">
-                Last updated: {lastRevalidation.toLocaleString()}
+              <p className="text-sm text-blue-200 mt-2">
+                آخر تحديث يدوي: {lastRevalidation.toLocaleString('ar-EG')}
               </p>
             )}
           </div>
@@ -157,22 +161,24 @@ export default function DashboardWithRevalidation() {
           <div className="flex flex-col sm:flex-row gap-3">
             {/* Cache Info */}
             {cacheInfo && (
-              <div className="text-sm text-red-100 bg-white/10 rounded-lg p-3">
-                <div>Static Data: {cacheInfo.hasCache ? '✅ Available' : '❌ Empty'}</div>
+              <div className="text-sm text-blue-100 bg-white/10 rounded-lg p-3">
+                <div><strong>نظام ISR:</strong></div>
+                <div>{cacheInfo.hasCache ? '✅ نشط' : '🔄 قيد البناء'}</div>
                 {cacheInfo.hasCache && (
-                  <div>{cacheInfo.cacheSize} products in static file</div>
+                  <div>{cacheInfo.cacheSize} منتج محفوظ</div>
                 )}
+                <div className="text-xs mt-1">🔄 تحديث تلقائي كل 24 ساعة</div>
               </div>
             )}
             
-            {/* Manual Update Button */}
+            {/* ISR Manual Revalidation Button */}
             <motion.button
-              onClick={handleFullRevalidation}
+              onClick={handleISRRevalidation}
               disabled={revalidating}
-              className={`px-6 py-3 rounded-lg font-semibold transition-all ${
+              className={`px-6 py-3 rounded-lg font-semibold transition-all text-lg ${
                 revalidating
                   ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
-                  : 'bg-white text-red-900 hover:bg-gray-100'
+                  : 'bg-white text-blue-900 hover:bg-gray-100 shadow-lg'
               }`}
               whileHover={!revalidating ? { scale: 1.02 } : {}}
               whileTap={!revalidating ? { scale: 0.98 } : {}}
@@ -180,10 +186,10 @@ export default function DashboardWithRevalidation() {
               {revalidating ? (
                 <span className="flex items-center gap-2">
                   <div className="w-4 h-4 border-2 border-gray-300 border-t-transparent rounded-full animate-spin"></div>
-                  Updating...
+                  جاري التحديث...
                 </span>
               ) : (
-                '🚀 Update Website'
+                '🔄 تحديث فوري (ISR)'
               )}
             </motion.button>
             
@@ -194,19 +200,32 @@ export default function DashboardWithRevalidation() {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
-              🗑️ Clear Cache
+              🗑️ مسح الكاش
             </motion.button>
           </div>
         </div>
         
-        {/* Instructions */}
+        {/* ISR Instructions */}
         <div className="mt-4 p-4 bg-white/10 rounded-lg">
-          <h3 className="font-semibold mb-2">💡 How it works:</h3>
+          <h3 className="font-semibold mb-2">🔄 كيف يعمل نظام ISR:</h3>
           <div className="text-sm space-y-1">
-            <p>• Add/Edit/Delete products using the tabs below (saved to database)</p>
-            <p>• Products are NOT visible to customers until you update</p>
-            <p>• Click "Update Website" to copy database → static file → live website</p>
-            <p>• Website loads from static file = ultra-fast performance</p>
+            <p>• أضف/عدل المنتجات → <strong>يُحفظ في قاعدة البيانات</strong></p>
+            <p>• الموقع يتحديث <strong>تلقائياً كل 24 ساعة</strong> ليعرض آخر التغييرات</p>
+            <p>• للتحديث الفوري → اضغط "تحديث فوري (ISR)"</p>
+            <p>• الزوار يستمتعون بـ <strong>سرعة فائقة</strong> - صفر انتظار لاستعلامات قاعدة البيانات</p>
+          </div>
+        </div>
+        
+        {/* ISR Benefits */}
+        <div className="mt-4 p-4 bg-green-500/20 border border-green-500/30 rounded-lg">
+          <h4 className="font-semibold text-green-200 mb-2">🚀 مميزات نظام ISR:</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-green-100">
+            <div>• صفر استعلامات في Runtime</div>
+            <div>• تحديث تلقائي ذكي</div>
+            <div>• سرعة فائقة للزوار</div>
+            <div>• توفير 90%+ في استهلاك Supabase</div>
+            <div>• SEO ممتاز</div>
+            <div>• تحديث فوري عند الحاجة</div>
           </div>
         </div>
       </motion.div>
@@ -221,27 +240,27 @@ export default function DashboardWithRevalidation() {
         <motion.button
           className={`px-6 py-3 rounded-lg font-semibold transition-colors ${
             activeTab === "add"
-              ? "bg-red-900 text-white"
+              ? "bg-blue-900 text-white"
               : "bg-gray-200 text-gray-800 hover:bg-gray-300"
           }`}
           onClick={() => setActiveTab("add")}
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
         >
-          ➕ Add Product
+          ➕ إضافة منتج جديد
         </motion.button>
 
         <motion.button
           className={`px-6 py-3 rounded-lg font-semibold transition-colors ${
             activeTab === "remove"
-              ? "bg-red-900 text-white"
+              ? "bg-blue-900 text-white"
               : "bg-gray-200 text-gray-800 hover:bg-gray-300"
           }`}
           onClick={() => setActiveTab("remove")}
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
         >
-          📝 Manage Products
+          📝 إدارة المنتجات
         </motion.button>
       </motion.div>
 
@@ -261,18 +280,18 @@ export default function DashboardWithRevalidation() {
       
       {/* Footer Instructions */}
       <motion.div 
-        className="mt-12 p-6 bg-gray-50 rounded-xl border-l-4 border-red-900"
+        className="mt-12 p-6 bg-gray-50 rounded-xl border-l-4 border-blue-600"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.4 }}
       >
-        <h3 className="font-semibold text-gray-900 mb-3">🎯 Static Data Benefits:</h3>
+        <h3 className="font-semibold text-gray-900 mb-3">🎯 نظام ISR - الحل الأمثل:</h3>
         <div className="text-sm text-gray-700 space-y-2">
-          <p>• <strong>Lightning fast:</strong> Website loads from static files, not database</p>
-          <p>• <strong>Zero database load:</strong> Visitors never hit the database</p>
-          <p>• <strong>Perfect for SSG:</strong> Works with Next.js static generation</p>
-          <p>• <strong>Manual control:</strong> You decide exactly when changes go live</p>
-          <p>• <strong>Reliable:</strong> Website works even if database is down</p>
+          <p>• <strong>للزوار:</strong> سرعة فائقة - الموقع يحمل من ملفات ثابتة</p>
+          <p>• <strong>لك:</strong> تحديث تلقائي كل 24 ساعة + إمكانية التحديث الفوري</p>
+          <p>• <strong>لـ Supabase:</strong> توفير 90%+ في الاستهلاك</p>
+          <p>• <strong>للـ SEO:</strong> أداء ممتاز = ترتيب أفضل في محركات البحث</p>
+          <p>• <strong>للاستقرار:</strong> الموقع يعمل حتى لو تعطلت قاعدة البيانات</p>
         </div>
       </motion.div>
     </motion.div>

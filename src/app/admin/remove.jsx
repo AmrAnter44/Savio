@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabaseClient";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 
-// Animation variants (keeping the same as original)
+// Animation variants
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -171,12 +171,9 @@ const confirmationVariants = {
 
 export default function ManageFragrances() {
   const [products, setProducts] = useState([]);
-  const [staticProducts, setStaticProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [staticLoading, setStaticLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
-  const [lastStaticUpdate, setLastStaticUpdate] = useState(null);
 
   const [editingProduct, setEditingProduct] = useState(null);
   const [editName, setEditName] = useState("");
@@ -212,43 +209,6 @@ export default function ManageFragrances() {
       (product.brand && product.brand.toLowerCase().includes(searchTerm.toLowerCase().trim()))
     );
   }, [products, searchTerm]);
-
-  // Fetch static products (what visitors see) - from generated files
-  const fetchStaticProducts = async () => {
-    setStaticLoading(true);
-    try {
-      // Try to fetch from the actual static files that visitors see
-      const response = await fetch('/products.json', { 
-        cache: 'no-cache',
-        headers: { 'Cache-Control': 'no-cache' }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setStaticProducts(data || []);
-        
-        // Try to get last update from a meta file or headers
-        try {
-          const metaResponse = await fetch('/api/site-meta');
-          if (metaResponse.ok) {
-            const metaData = await metaResponse.json();
-            setLastStaticUpdate(metaData.lastStaticUpdate);
-          }
-        } catch (metaError) {
-          console.log('No meta endpoint available');
-          setLastStaticUpdate(null);
-        }
-      } else {
-        console.log('No static products file found - all products will show as pending');
-        setStaticProducts([]);
-      }
-    } catch (error) {
-      console.log('Static products file not accessible - showing database only');
-      setStaticProducts([]);
-    } finally {
-      setStaticLoading(false);
-    }
-  };
 
   const checkStorageSetup = async () => {
     try {
@@ -292,7 +252,6 @@ export default function ManageFragrances() {
   useEffect(() => {
     checkStorageSetup();
     fetchProducts();
-    fetchStaticProducts();
   }, []);
 
   const showDeleteConfirmation = (product) => {
@@ -333,21 +292,20 @@ export default function ManageFragrances() {
         return;
       }
 
-      // DON'T trigger revalidation for new products - only update database
-      // try {
-      //   await fetch('/api/revalidate', {
-      //     method: 'POST',
-      //     headers: { 'Content-Type': 'application/json' },
-      //     body: JSON.stringify({ action: 'delete', productId: productId })
-      //   });
-      // } catch (revError) {
-      //   console.warn('Revalidation request failed:', revError);
-      // }
+      // Trigger revalidation for SSG/ISR pages
+      try {
+        await fetch('/api/revalidate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'delete', productId: productId })
+        });
+      } catch (revError) {
+        console.warn('Revalidation request failed:', revError);
+      }
 
-      setMessage("تم حذف العطر من قاعدة البيانات بنجاح! التغيير مؤقت - اضغط 'تحديث الموقع' لتطبيق التغيير على الموقع.");
+      setMessage("Fragrance deleted successfully! Pages will update shortly.");
       fetchProducts();
-      // Don't refresh static products automatically
-      setTimeout(() => setMessage(""), 6000);
+      setTimeout(() => setMessage(""), 3000);
       
     } catch (error) {
       console.error("Delete error:", error);
@@ -585,22 +543,21 @@ export default function ManageFragrances() {
         throw new Error(errorData.error || "Failed to update fragrance");
       }
 
-      // DON'T trigger revalidation automatically - let admin control when to update site
-      // try {
-      //   await fetch('/api/revalidate', {
-      //     method: 'POST',
-      //     headers: { 'Content-Type': 'application/json' },
-      //     body: JSON.stringify({ action: 'update', productId: productId })
-      //   });
-      // } catch (revError) {
-      //   console.warn('Revalidation request failed:', revError);
-      // }
+      // Trigger revalidation for SSG/ISR pages on update
+      try {
+        await fetch('/api/revalidate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'update', productId: productId })
+        });
+      } catch (revError) {
+        console.warn('Revalidation request failed:', revError);
+      }
 
       setEditingProduct(null);
-      setMessage("تم تحديث العطر في قاعدة البيانات! التغيير مؤقت - اضغط 'تحديث الموقع' لتطبيق التغيير على الموقع.");
+      setMessage("Fragrance updated successfully!");
       fetchProducts();
-      // Don't automatically refresh static products
-      setTimeout(() => setMessage(""), 6000);
+      setTimeout(() => setMessage(""), 3000);
     } catch (error) {
       console.error("Update error:", error);
       setMessage("Error updating fragrance: " + error.message);
@@ -636,30 +593,6 @@ export default function ManageFragrances() {
       >
         Manage Fragrances
       </motion.h1>
-
-      {/* Data Comparison Banner */}
-      <motion.div 
-        className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.1 }}
-      >
-        <h3 className="font-semibold text-blue-800 mb-2">📊 Database Management Mode</h3>
-        <div className="text-sm text-blue-700 space-y-1">
-          <p><strong>⚠️ ما تراه هنا:</strong> {products.length} منتج من قاعدة البيانات (أحدث التغييرات)</p>
-          <p><strong>👥 ما يراه الزوار:</strong> {staticProducts.length} منتج من البيانات الثابتة 
-            {lastStaticUpdate && (
-              <span> (آخر تحديث: {new Date(lastStaticUpdate).toLocaleString('ar-EG')})</span>
-            )}
-          </p>
-          <p><strong>🔄 للمزامنة:</strong> اضغط "تحديث الموقع" في الداشبورد بعد الانتهاء من التعديلات</p>
-          {staticProducts.length === 0 && (
-            <p className="text-orange-600 font-medium">
-              ⚠️ لا توجد بيانات ثابتة - جميع المنتجات ستظهر كـ "Pending" حتى يتم تحديث الموقع
-            </p>
-          )}
-        </div>
-      </motion.div>
 
       {/* Search Bar */}
       <motion.div 
@@ -722,9 +655,7 @@ export default function ManageFragrances() {
         {message && (
           <motion.p 
             className={`text-center mb-4 p-3 rounded ${
-              message.includes("successfully") || message.includes("بنجاح") 
-                ? "text-green-900 bg-green-50" 
-                : "text-red-900 bg-red-50"
+              message.includes("successfully") ? "text-green-900 bg-green-50" : "text-red-900 bg-red-50"
             }`}
             variants={messageVariants}
             initial="hidden"
@@ -797,15 +728,6 @@ export default function ManageFragrances() {
               custom={index}
               layout
             >
-              {/* Badge to show if product is in static data */}
-              <div className="absolute top-2 right-2 z-10">
-                {staticProducts.some(sp => (sp.uuid || sp.id) === (prod.uuid || prod.id)) ? (
-                  <span className="bg-green-500 text-white text-xs px-2 py-1 rounded-full">✓ Live</span>
-                ) : (
-                  <span className="bg-orange-500 text-white text-xs px-2 py-1 rounded-full">⏳ Pending</span>
-                )}
-              </div>
-
               <motion.div
                 className="lg:w-full h-72 lg:h-58 mb-3"
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -862,10 +784,367 @@ export default function ManageFragrances() {
                   </div>
                 )}
               </motion.div>
+
+              <motion.div 
+                className="flex gap-2"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.1 + 0.3 }}
+              >
+                <motion.button
+                  onClick={() => openEditModal(prod)}
+                  className="px-3 py-1 bg-red-900 text-white rounded transition hover:bg-red-700"
+                  variants={buttonVariants}
+                  initial="idle"
+                  whileHover="hover"
+                  whileTap="tap"
+                >
+                  Edit
+                </motion.button>
+                <motion.button
+                  onClick={() => showDeleteConfirmation(prod)}
+                  className="px-3 py-1 bg-gray-900 text-white rounded hover:bg-gray-700 transition"
+                  variants={buttonVariants}
+                  initial="idle"
+                  whileHover="hover"
+                  whileTap="tap"
+                >
+                  Delete
+                </motion.button>
+              </motion.div>
             </motion.div>
           ))}
         </motion.div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <AnimatePresence>
+        {showConfirmation && productToDelete && (
+          <motion.div
+            className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4"
+            variants={backdropVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            onClick={cancelDelete}
+          >
+            <motion.div
+              className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md"
+              variants={confirmationVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <motion.div
+                className="text-center mb-6"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="text-6xl mb-4">⚠️</div>
+                <h3 className="text-xl font-bold text-gray-800 mb-2">Delete Fragrance?</h3>
+                <p className="text-gray-900 mb-2">
+                  Are you sure you want to delete
+                </p>
+                <p className="font-semibold text-gray-800">"{productToDelete.name}"?</p>
+                <p className="text-sm text-red-500 mt-2">
+                  This action cannot be undone!
+                </p>
+              </motion.div>
+
+              <motion.div
+                className="flex gap-3 justify-center"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: 0.1 }}
+              >
+                <motion.button
+                  onClick={cancelDelete}
+                  className="px-6 py-2 bg-gray-500 text-white rounded hover:bg-gray-900 transition disabled:opacity-50"
+                  variants={buttonVariants}
+                  initial="idle"
+                  whileHover={!deleting ? "hover" : {}}
+                  whileTap={!deleting ? "tap" : {}}
+                  disabled={deleting}
+                >
+                  Cancel
+                </motion.button>
+                <motion.button
+                  onClick={confirmDelete}
+                  className="px-6 py-2 bg-red-900 text-white rounded hover:bg-red-700 transition disabled:opacity-50"
+                  variants={buttonVariants}
+                  initial="idle"
+                  whileHover={!deleting ? "hover" : {}}
+                  whileTap={!deleting ? "tap" : {}}
+                  disabled={deleting}
+                >
+                  {deleting ? (
+                    <span className="flex items-center gap-2">
+                      <motion.div
+                        className="w-4 h-4 border-2 border-white border-t-transparent rounded-full"
+                        variants={loadingVariants}
+                        animate="animate"
+                      />
+                      Deleting...
+                    </span>
+                  ) : (
+                    "Delete"
+                  )}
+                </motion.button>
+              </motion.div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Edit Modal */}
+      <AnimatePresence>
+        {editingProduct && (
+          <motion.div
+            className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50 p-4"
+            variants={backdropVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            onClick={closeEditModal}
+          >
+            <motion.div
+              className="bg-white p-6 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+              variants={modalVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <motion.h2 
+                className="text-xl font-bold mb-4"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                Edit Fragrance
+              </motion.h2>
+
+              <motion.input
+                type="text"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                placeholder="Fragrance Name *"
+                className="w-full mb-3 p-3 border rounded-lg focus:outline-none focus:border-red-900"
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3, delay: 0.1 }}
+              />
+
+              <motion.input
+                type="number"
+                value={editPrice}
+                onChange={(e) => setEditPrice(e.target.value)}
+                placeholder="Price (LE) *"
+                className="w-full mb-3 p-3 border rounded-lg focus:outline-none focus:border-red-900"
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3, delay: 0.2 }}
+              />
+
+              <motion.input
+                type="number"
+                value={editNewPrice}
+                onChange={(e) => setEditNewPrice(e.target.value)}
+                placeholder="Sale Price (LE) - optional"
+                className="w-full mb-3 p-3 border rounded-lg focus:outline-none focus:border-red-900"
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3, delay: 0.3 }}
+              />
+
+              {/* Brand */}
+              <motion.div 
+                className="mb-4"
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3, delay: 0.4 }}
+              >
+                <select 
+                  value={editBrand} 
+                  onChange={(e) => setEditBrand(e.target.value)} 
+                  className="w-full p-3 border rounded-lg focus:outline-none focus:border-red-900" 
+                  required
+                >
+                  <option value="">Select Brand *</option>
+                  {brandOptions.map((brandOption) => (
+                    <option key={brandOption} value={brandOption}>
+                      {brandOption}
+                    </option>
+                  ))}
+                </select>
+              </motion.div>
+
+              {/* Category/Type */}
+              <motion.div 
+                className="mb-4"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: 0.5 }}
+              >
+                <h3 className="text-sm font-semibold mb-2">Category *:</h3>
+                <div className="flex flex-wrap gap-2">
+                  {typeOptions.map((t) => (
+                    <motion.button
+                      key={t}
+                      type="button"
+                      onClick={() => setEditType(t)}
+                      className={`px-4 py-2 rounded-full font-medium transition-all ${
+                        editType === t 
+                          ? "bg-red-900 text-white shadow-lg" 
+                          : "bg-gray-100 text-gray-700 hover:bg-red-100 hover:text-red-700"
+                      }`}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.2 }}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      {t === 'master' ? 'Master-Box' : t.charAt(0).toUpperCase() + t.slice(1)}
+                    </motion.button>
+                  ))}
+                </div>
+              </motion.div>
+
+              {/* Sizes */}
+              <motion.div 
+                className="mb-4"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: 0.6 }}
+              >
+                <h3 className="text-sm font-semibold mb-2">Sizes *:</h3>
+                <div className="flex flex-wrap gap-2">
+                  {sizeOptions.map((size, idx) => (
+                    <motion.button
+                      key={size}
+                      type="button"
+                      onClick={() => toggleSize(size)}
+                      className={`px-3 py-1 rounded border text-sm transition ${
+                        editSizes.includes(size) 
+                          ? "bg-red-900 text-white border-red-900" 
+                          : "bg-white text-gray-700 border-gray-300 hover:border-red-900"
+                      }`}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.2, delay: idx * 0.02 }}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      {size}
+                    </motion.button>
+                  ))}
+                </div>
+              </motion.div>
+
+              {/* Images */}
+              <motion.div 
+                className="mb-6"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: 0.7 }}
+              >
+                <h3 className="text-sm font-semibold mb-3">Images:</h3>
+                
+                {/* Current Images */}
+                {editPictures.length > 0 && (
+                  <div className="grid grid-cols-3 gap-3 mb-4">
+                    {editPictures.map((img, idx) => (
+                      <div key={idx} className="relative group">
+                        <Image
+                          src={img}
+                          alt={`Fragrance ${idx + 1}`}
+                          width={120}
+                          height={120}
+                          className="rounded object-cover w-full h-24"
+                        />
+                        <button
+                          onClick={() => removeImage(idx)}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-900 transition"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Upload New Images */}
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-red-900 transition">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleImageUpload}
+                    className="hidden"
+                    id="image-upload"
+                    disabled={uploadingImages}
+                  />
+                  <label 
+                    htmlFor="image-upload" 
+                    className={`cursor-pointer text-red-900 hover:text-red-700 font-medium ${
+                      uploadingImages ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
+                  >
+                    {uploadingImages ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <motion.div
+                          className="w-4 h-4 border-2 border-red-900 border-t-transparent rounded-full"
+                          variants={loadingVariants}
+                          animate="animate"
+                        />
+                        {message.includes("Processing") ? "Processing..." : "Uploading..."}
+                      </span>
+                    ) : (
+                      'Upload Images'
+                    )}
+                  </label>
+                  <p className="text-xs text-gray-500 mt-2">
+                    Click to select multiple images (Max 5MB each)<br/>
+                    Images will be resized to 768x950px automatically
+                  </p>
+                </div>
+              </motion.div>
+
+              {/* Modal Actions */}
+              <motion.div 
+                className="flex justify-end gap-3"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: 0.8 }}
+              >
+                <motion.button
+                  onClick={closeEditModal}
+                  className="px-4 py-2 bg-gray-900 text-white rounded hover:bg-gray-500 transition"
+                  variants={buttonVariants}
+                  initial="idle"
+                  whileHover="hover"
+                  whileTap="tap"
+                >
+                  Cancel
+                </motion.button>
+                <motion.button
+                  onClick={handleSaveEdit}
+                  className="px-4 py-2 bg-green-900 text-white rounded hover:bg-green-700 transition disabled:opacity-50"
+                  variants={buttonVariants}
+                  initial="idle"
+                  whileHover="hover"
+                  whileTap="tap"
+                  disabled={uploadingImages}
+                >
+                  {uploadingImages ? 'Processing...' : 'Save Changes'}
+                </motion.button>
+              </motion.div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
