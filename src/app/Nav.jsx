@@ -38,15 +38,15 @@ export default function Navbar() {
             <Image
               src={scrolled ? "/darklogo.png" : "/whitelogo.png"}
               alt="Logo"
-              width={50}
-              height={50}
+              width={60}
+              height={60}
               className="object-contain"
             />
           </motion.div>
 
           {/* ✅ Links */}
           <div className="flex gap-4">
-            <div className="flex items-center gap-2 lg:gap-4  lg:mr-9">
+            <div className=" h-16 flex items-center justify-between text-2xl font-bold text ">
               <motion.div
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}

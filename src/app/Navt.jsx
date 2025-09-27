@@ -15,7 +15,7 @@ export default function NavT() {
   return (
     <>
     
-      <div className="sticky top-0 bg border-2 z-50 ">
+      <div className="sticky top-0 bg  z-50 p-4">
         <div className=" h-16 flex items-center justify-between text-2xl font-bold text  ">
           <Link href="/"><Image src={logo} width={60} height={60} className="ml-8" alt="logo" /> </Link>
 
