@@ -78,17 +78,17 @@ const uniqueTypes = [
     "women": {
       name: "Women",
       description: "Elegant fragrances for women",
-      image: "/women.jpg"
+      image: "/women.webp"
     },
     "men": {
       name: "Men", 
       description: "Bold scents for men",
-      image: "/men.jpg"
+      image: "/men.webp"
     },
     "master": {
       name: "Master-Box",
       description: "Premium fragrance collections", 
-      image: "/master.jpg"
+      image: "/master.webp"
     },
   }
 

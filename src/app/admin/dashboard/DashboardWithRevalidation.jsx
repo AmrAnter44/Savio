@@ -117,30 +117,12 @@ export default function DashboardWithRevalidation() {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.4 }}
     >
-      {/* 🔄 ISR MODE */}
-      <motion.div 
-        className="bg-gradient-to-r from-green-900 to-emerald-900 text-white rounded-xl p-6 mb-6"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <div className="flex items-start gap-4">
-          <div className="text-3xl">🔄</div>
-          <div className="flex-1">
-            <h3 className="text-xl font-bold mb-2">ISR Mode - أفضل ما في العالمين!</h3>
-            <div className="text-green-100 text-sm space-y-1">
-              <p>• <strong>صفر استعلامات في Runtime:</strong> الموقع يعمل من ملفات ثابتة</p>
-              <p>• <strong>تحديث تلقائي:</strong> البيانات تتحديث كل 24 ساعة تلقائياً</p>
-              <p>• <strong>سرعة فائقة:</strong> زوار الموقع لا ينتظرون أي استعلامات</p>
-              <p>• <strong>تحديث فوري اختياري:</strong> يمكنك تحديث الموقع فوراً عند الحاجة</p>
-            </div>
-          </div>
-        </div>
-      </motion.div>
+
+
 
       {/* Header with ISR Info */}
       <motion.div 
-        className="bg-gradient-to-r from-blue-900 to-purple-900 text-white rounded-xl p-6 mb-8"
+        className="bg-gradient-to-r from-black to-red-900 text-white rounded-xl p-6 mb-8"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1 }}
@@ -148,11 +130,11 @@ export default function DashboardWithRevalidation() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <h1 className="text-2xl font-bold mb-2">لوحة التحكم - ISR Mode</h1>
-            <p className="text-blue-100">
+            <p className="text-red-100">
               إدارة المنتجات مع تحديث تلقائي ذكي
             </p>
             {lastRevalidation && (
-              <p className="text-sm text-blue-200 mt-2">
+              <p className="text-sm text-red-200 mt-2">
                 آخر تحديث يدوي: {lastRevalidation.toLocaleString('ar-EG')}
               </p>
             )}
@@ -161,7 +143,7 @@ export default function DashboardWithRevalidation() {
           <div className="flex flex-col sm:flex-row gap-3">
             {/* Cache Info */}
             {cacheInfo && (
-              <div className="text-sm text-blue-100 bg-white/10 rounded-lg p-3">
+              <div className="text-sm text-red-100 bg-white/10 rounded-lg p-3">
                 <div><strong>نظام ISR:</strong></div>
                 <div>{cacheInfo.hasCache ? '✅ نشط' : '🔄 قيد البناء'}</div>
                 {cacheInfo.hasCache && (
@@ -178,7 +160,7 @@ export default function DashboardWithRevalidation() {
               className={`px-6 py-3 rounded-lg font-semibold transition-all text-lg ${
                 revalidating
                   ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
-                  : 'bg-white text-blue-900 hover:bg-gray-100 shadow-lg'
+                  : 'bg-white text-red-900 hover:bg-gray-100 shadow-lg'
               }`}
               whileHover={!revalidating ? { scale: 1.02 } : {}}
               whileTap={!revalidating ? { scale: 0.98 } : {}}
@@ -207,19 +189,19 @@ export default function DashboardWithRevalidation() {
         
         {/* ISR Instructions */}
         <div className="mt-4 p-4 bg-white/10 rounded-lg">
-          <h3 className="font-semibold mb-2">🔄 كيف يعمل نظام ISR:</h3>
+          <h3 className="font-semibold mb-2"> كيف يعمل نظام ISR:</h3>
           <div className="text-sm space-y-1">
             <p>• أضف/عدل المنتجات → <strong>يُحفظ في قاعدة البيانات</strong></p>
-            <p>• الموقع يتحديث <strong>تلقائياً كل 24 ساعة</strong> ليعرض آخر التغييرات</p>
+            <p>• الموقع يتحديث  ليعرض آخر التغييرات</p>
             <p>• للتحديث الفوري → اضغط "تحديث فوري (ISR)"</p>
             <p>• الزوار يستمتعون بـ <strong>سرعة فائقة</strong> - صفر انتظار لاستعلامات قاعدة البيانات</p>
           </div>
         </div>
         
         {/* ISR Benefits */}
-        <div className="mt-4 p-4 bg-green-500/20 border border-green-500/30 rounded-lg">
-          <h4 className="font-semibold text-green-200 mb-2">🚀 مميزات نظام ISR:</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-green-100">
+        <div className="mt-4 p-4 bg-red-500/20 border border-red-500/30 rounded-lg">
+          <h4 className="font-semibold text-red-200 mb-2">🚀 مميزات نظام ISR:</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-red-100">
             <div>• صفر استعلامات في Runtime</div>
             <div>• تحديث تلقائي ذكي</div>
             <div>• سرعة فائقة للزوار</div>
@@ -240,7 +222,7 @@ export default function DashboardWithRevalidation() {
         <motion.button
           className={`px-6 py-3 rounded-lg font-semibold transition-colors ${
             activeTab === "add"
-              ? "bg-blue-900 text-white"
+              ? "bg-red-900 text-white"
               : "bg-gray-200 text-gray-800 hover:bg-gray-300"
           }`}
           onClick={() => setActiveTab("add")}
@@ -253,7 +235,7 @@ export default function DashboardWithRevalidation() {
         <motion.button
           className={`px-6 py-3 rounded-lg font-semibold transition-colors ${
             activeTab === "remove"
-              ? "bg-blue-900 text-white"
+              ? "bg-red-900 text-white"
               : "bg-gray-200 text-gray-800 hover:bg-gray-300"
           }`}
           onClick={() => setActiveTab("remove")}
@@ -278,22 +260,7 @@ export default function DashboardWithRevalidation() {
         </motion.div>
       </AnimatePresence>
       
-      {/* Footer Instructions */}
-      <motion.div 
-        className="mt-12 p-6 bg-gray-50 rounded-xl border-l-4 border-blue-600"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.4 }}
-      >
-        <h3 className="font-semibold text-gray-900 mb-3">🎯 نظام ISR - الحل الأمثل:</h3>
-        <div className="text-sm text-gray-700 space-y-2">
-          <p>• <strong>للزوار:</strong> سرعة فائقة - الموقع يحمل من ملفات ثابتة</p>
-          <p>• <strong>لك:</strong> تحديث تلقائي كل 24 ساعة + إمكانية التحديث الفوري</p>
-          <p>• <strong>لـ Supabase:</strong> توفير 90%+ في الاستهلاك</p>
-          <p>• <strong>للـ SEO:</strong> أداء ممتاز = ترتيب أفضل في محركات البحث</p>
-          <p>• <strong>للاستقرار:</strong> الموقع يعمل حتى لو تعطلت قاعدة البيانات</p>
-        </div>
-      </motion.div>
+  
     </motion.div>
   )
 }
