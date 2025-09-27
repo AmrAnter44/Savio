@@ -228,7 +228,7 @@ export default async function StorePage() {
 /**
  * ✅ ISR Configuration: Auto-revalidation every 24 hours
  */
-export const revalidate = 86400 // 24 hours = 86400 seconds
+export const revalidate = false // 24 hours = 86400 seconds
 
 // Alternative shorter intervals for testing:
 // export const revalidate = 3600   // 1 hour
