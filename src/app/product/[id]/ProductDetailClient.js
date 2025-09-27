@@ -62,7 +62,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
       setAdded(true)
       
       toast.success(`${product.name} added to cart!`, {
-        duration: 2000,
+        duration: 500,
         style: {
           background: '#10B981',
           color: 'white',
