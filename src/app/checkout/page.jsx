@@ -205,7 +205,7 @@ export default function CheckoutPage() {
     }
 
     message += ` Please confirm this order to proceed with delivery.\n`;
-    message += ` Free delivery for orders over 2000 LE\n`;
+    message += ` Free delivery !\n`;
     message += ` Expected delivery: 2-4 business days\n\n`;
     message += `Thank you for choosing Savio Fragrances! `;
 
