@@ -3,10 +3,15 @@ const nextConfig = {
   // ✅ Enable React strict mode for better development
   reactStrictMode: true,
   
-  // ✅ Image optimization settings - ENHANCED
+  // ✅ Image optimization settings - FIXED for Next.js 15
   images: {
-    domains: [
-      "lblljhoouydfvekihqka.supabase.co"
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'lblljhoouydfvekihqka.supabase.co',
+        port: '',
+        pathname: '/storage/v1/object/public/**',
+      }
     ],
     // ✅ Modern image formats for better compression
     formats: ['image/webp', 'image/avif'],
@@ -18,22 +23,27 @@ const nextConfig = {
     // ✅ Longer cache time for better performance
     minimumCacheTTL: 31536000, // 1 year
     
-    // ✅ Better image quality vs size balance
-    quality: 85,
-    
     // ✅ Enable SVG support
     dangerouslyAllowSVG: true,
+    contentDispositionType: 'attachment',
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
 
-  // ✅ Performance optimizations
-  swcMinify: true, // Use SWC instead of Babel
+  // ✅ Performance optimizations - FIXED
+  // swcMinify is enabled by default in Next.js 15, no need to specify
   
-  // ✅ Experimental features for better performance
+  // ✅ Experimental features for better performance - FIXED
   experimental: {
     optimizePackageImports: ['framer-motion', 'lucide-react', 'react-icons'],
-    optimizeServerComponentsExports: true,
-    forceSwcTransforms: true,
+    // Removed invalid options
+    turbo: {
+      rules: {
+        '*.svg': {
+          loaders: ['@svgr/webpack'],
+          as: '*.js',
+        },
+      },
+    },
   },
 
   // ✅ Compiler optimizations
@@ -56,12 +66,30 @@ const nextConfig = {
         headers: [
           {
             key: 'Link',
-            value: '</css/b467b5769f28717c.css>; rel=preload; as=style',
+            value: '</_next/static/css/app/layout.css>; rel=preload; as=style',
           },
           {
             key: 'X-DNS-Prefetch-Control',
             value: 'on'
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff'
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'origin-when-cross-origin'
           }
+        ],
+      },
+      // Static assets caching
+      {
+        source: '/_next/static/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
         ],
       },
       // Image caching
@@ -75,25 +103,7 @@ const nextConfig = {
         ],
       },
       {
-        source: '/:path*.jpg',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
-          },
-        ],
-      },
-      {
-        source: '/:path*.png',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable', 
-          },
-        ],
-      },
-      {
-        source: '/:path*.webp',
+        source: '/:path*\\.(jpg|jpeg|png|webp|avif|gif|svg)',
         headers: [
           {
             key: 'Cache-Control',
@@ -110,12 +120,27 @@ const nextConfig = {
             value: 'public, max-age=31536000, immutable',
           },
         ],
+      },
+      // Service Worker
+      {
+        source: '/sw.js',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=0, must-revalidate',
+          },
+          {
+            key: 'Service-Worker-Allowed',
+            value: '/',
+          },
+        ],
       }
     ]
   },
 
   // ✅ Webpack optimizations for better chunking
   webpack: (config, { dev, isServer }) => {
+    // Only optimize for production client builds
     if (!dev && !isServer) {
       // Optimize chunk splitting
       config.optimization.splitChunks = {
@@ -123,27 +148,30 @@ const nextConfig = {
         minSize: 20000,
         maxSize: 244000,
         cacheGroups: {
+          default: {
+            minChunks: 2,
+            priority: -20,
+            reuseExistingChunk: true,
+          },
           vendor: {
             test: /[\\/]node_modules[\\/]/,
             name: 'vendors',
+            priority: -10,
             chunks: 'all',
-            priority: 10,
             maxSize: 244000,
           },
-          common: {
-            name: 'common',
-            minChunks: 2,
-            chunks: 'all',
-            priority: 5,
-            enforce: true,
-            maxSize: 244000,
-          },
-          // Separate framer-motion for better caching
+          // Separate large libraries
           framerMotion: {
             test: /[\\/]node_modules[\\/](framer-motion)[\\/]/,
             name: 'framer-motion',
             chunks: 'all',
             priority: 20,
+          },
+          reactIcons: {
+            test: /[\\/]node_modules[\\/](react-icons)[\\/]/,
+            name: 'react-icons', 
+            chunks: 'all',
+            priority: 15,
           }
         }
       };
@@ -153,19 +181,42 @@ const nextConfig = {
       config.optimization.sideEffects = false;
     }
 
+    // SVG handling
+    config.module.rules.push({
+      test: /\.svg$/,
+      use: ['@svgr/webpack']
+    });
+
     return config;
   },
 
-  // ✅ Environment variables for browser targeting
-  env: {
-    BROWSERSLIST: 'defaults, not IE 11, not op_mini all'
-  },
-
+  // ✅ Static file serving optimization
+  trailingSlash: false,
+  
   // ✅ Logging for build debugging
   logging: {
     fetches: {
       fullUrl: true,
     },
+  },
+
+  // ✅ Environment variables
+  env: {
+    CUSTOM_KEY: 'performance-optimized',
+  },
+
+  // ✅ Redirects for SEO
+  async redirects() {
+    return [
+      // Add any redirects here if needed
+    ]
+  },
+
+  // ✅ Rewrites for clean URLs
+  async rewrites() {
+    return [
+      // Add any rewrites here if needed
+    ]
   },
 }
 
