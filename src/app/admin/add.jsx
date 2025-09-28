@@ -61,7 +61,7 @@ export default function AddFragranceProduct() {
   "Amouage", "Parfums de Marly", "Initio", "Kilian", "Clive Christian",
   "Xerjoff", "Roja Parfums", "Tiziana Terenzi", "Mancera", "Montale",
   "Maison Francis Kurkdjian", "Ormonde Jayne", "Penhaligon's","Armaf",
-  "Acqua di Parma", "Guerlain", "Etat Libre d’Orange", "Frederic Malle","Kayali Fragrances",
+  "Acqua di Parma", "Guerlain", "Etat Libre d’Orange", "Frederic Malle","Kayali Fragrances","Giorgio Armani",
   
   // عربية وخليجية
   "Arabian Oud", "Ajmal", "Rasasi", "Al Haramain", "Swiss Arabian",
