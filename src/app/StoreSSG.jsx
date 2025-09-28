@@ -1,19 +1,69 @@
 "use client"
 
-import { useState, useMemo, useEffect } from "react"
+import { useState, useMemo, useEffect, useCallback, memo } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
 import { FaFilter, FaFilterCircleXmark, FaFire } from "react-icons/fa6"
 
-// Animation variants - same as before
+// ✅ Import optimized ProductImage component
+const ProductImage = memo(({ product, isHovered, className, priority = false, index = 0 }) => {
+  const [imageSrc, setImageSrc] = useState(product.pictures?.[0] || "/placeholder.png")
+  const [imageError, setImageError] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    if (isHovered && product.pictures?.[1]) {
+      setImageSrc(product.pictures[1])
+    } else if (product.pictures?.[0]) {
+      setImageSrc(product.pictures[0])
+    }
+  }, [isHovered, product.pictures])
+
+  const handleError = useCallback(() => {
+    if (!imageError) {
+      setImageSrc('/placeholder.png')
+      setImageError(true)
+    }
+  }, [imageError])
+
+  const handleLoad = useCallback(() => {
+    setIsLoading(false)
+  }, [])
+
+  return (
+    <div className="relative w-full h-full">
+      {isLoading && (
+        <div className="absolute inset-0 skeleton rounded-lg" />
+      )}
+      <Image
+        src={imageSrc}
+        alt={product.name}
+        fill
+        className={`${className} transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
+        onError={handleError}
+        onLoad={handleLoad}
+        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+        priority={priority}
+        quality={85}
+        placeholder="blur"
+        blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
+        fetchPriority={index < 4 ? "high" : "auto"}
+        loading={priority ? "eager" : "lazy"}
+        decoding="async"
+      />
+    </div>
+  )
+})
+
+// ✅ Optimized animation variants
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
     transition: { 
       duration: 0.3, 
-      staggerChildren: 0.03
+      staggerChildren: 0.02 // Reduced stagger for better performance
     }
   }
 }
@@ -29,45 +79,220 @@ const itemVariants = {
   }
 }
 
-const filterVariants = {
-  hidden: { height: 0, opacity: 0 },
-  visible: { 
-    height: "auto", 
-    opacity: 1,
-    transition: { duration: 0.3 }
-  }
-}
+// ✅ Memoized category card component
+const CategoryCard = memo(({ category, onClick, isActive }) => (
+  <motion.div
+    initial={{ opacity: 0, scale: 0.95 }}
+    animate={{ opacity: 1, scale: 1 }}
+    transition={{ duration: 0.5 }}
+    whileHover={{ scale: 1.02, y: -4 }}
+    whileTap={{ scale: 0.98 }}
+    className={`bg-gradient-to-br cursor-pointer p-8 text-center relative overflow-hidden rounded-2xl transition-all duration-300 text-white min-h-[300px] flex items-center justify-center ${isActive ? 'ring-4 ring-red-900' : ''}`}
+    onClick={() => onClick(category.key)}
+    style={{
+      backgroundImage: category.image ? `linear-gradient(135deg, rgba(0,0,0,0.4), rgba(0,0,0,0.6)), url(${category.image})` : undefined,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat'
+    }}
+  >
+    <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full -translate-y-16 translate-x-16"></div>
+    <div className="absolute bottom-0 left-0 w-24 h-24 bg-white opacity-10 rounded-full translate-y-12 -translate-x-12"></div>
+    
+    <div className="relative z-10">
+      <h3 className="text-3xl font-bold mb-3 capitalize text-white">{category.name}</h3>
+      <p className="text-white/80">{category.count} products</p>
+    </div>
+    
+    {isActive && (
+      <div className="absolute top-4 right-4 bg-white text-gray-900 px-3 py-1 rounded-full text-sm font-bold">
+        Active
+      </div>
+    )}
+  </motion.div>
+))
 
-const categoryVariants = {
-  hidden: { opacity: 0, scale: 0.95 },
-  visible: { 
-    opacity: 1, 
-    scale: 1,
-    transition: { duration: 0.5 }
-  }
-}
+// ✅ Memoized product card component
+const ProductCard = memo(({ product, index, hoveredId, setHoveredId }) => {
+  const isHovered = hoveredId === product.id
+  
+  const getDiscountPercentage = useCallback((originalPrice, salePrice) => {
+    return Math.round(((originalPrice - salePrice) / originalPrice) * 100)
+  }, [])
 
-const saleVariants = {
-  hidden: { opacity: 0, x: -30 },
-  visible: { 
-    opacity: 1, 
-    x: 0,
-    transition: { duration: 0.6 }
-  }
-}
+  return (
+    <motion.div
+      key={product.id}
+      variants={itemVariants}
+      whileHover={{ y: -4, scale: 1.02 }}
+      onMouseEnter={() => setHoveredId(product.id)}
+      onMouseLeave={() => setHoveredId(null)}
+      className="group"
+    >
+      <Link href={`/product/${product.id}`} className="block">
+        <div className="group bg-white rounded-xl overflow-hidden  hover:shadow-lg transition-all duration-300 cursor-pointer">
+          <div className="relative overflow-hidden h-60 md:h-72 lg:h-96 bg-gray-50">
+            <ProductImage
+              product={product}
+              isHovered={isHovered}
+              className="object-cover transition-transform duration-900 group-hover:scale-105"
+              priority={index < 4}
+              index={index}
+            />
+
+            {product.newprice && (
+              <div className="absolute top-3 left-3 bg-red-900 text-white px-3 py-1 rounded-full text-xs font-bold z-10 flex items-center gap-1">
+                {getDiscountPercentage(product.price, product.newprice)}% OFF
+              </div>
+            )}
+
+            {product.sizes?.length > 0 && (
+              <div className="absolute bottom-3 right-3 bg-black/70 text-white px-2 py-1 rounded text-xs">
+                {product.sizes[0]}
+              </div>
+            )}
+          </div>
+
+          <div className="p-4">
+            <h3 className="font-medium text-gray-900 mb-2 line-clamp-2">
+              {product.name}
+            </h3>
+            
+            {product.description && (
+              <p className="text-sm text-gray-900 mb-3">
+                {product.description}
+              </p>
+            )}
+            
+            <div className="flex items-center justify-between mb-4">
+              {product.newprice ? (
+                <div className="flex items-center gap-2">
+                  <span className="text-lg font-semibold text-gray-900">
+                    {product.newprice} LE
+                  </span>
+                  <span className="text-sm text-gray-900 line-through">
+                    {product.price} LE
+                  </span>
+                </div>
+              ) : (
+                <span className="text-lg font-semibold text-gray-900">
+                  {product.price} LE
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      </Link>
+    </motion.div>
+  )
+})
+
+// ✅ Optimized virtual scrolling for large product lists
+const VirtualProductGrid = memo(({ products, hoveredId, setHoveredId }) => {
+  const [visibleProducts, setVisibleProducts] = useState([])
+  const [loadedCount, setLoadedCount] = useState(12)
+  const [isLoading, setIsLoading] = useState(false)
+
+  // ✅ Load products in chunks to prevent main thread blocking
+  useEffect(() => {
+    const loadProducts = async () => {
+      setIsLoading(true)
+      
+      // Use requestIdleCallback for better performance
+      if (window.requestIdleCallback) {
+        window.requestIdleCallback(() => {
+          setVisibleProducts(products.slice(0, loadedCount))
+          setIsLoading(false)
+        })
+      } else {
+        // Fallback for browsers without requestIdleCallback
+        setTimeout(() => {
+          setVisibleProducts(products.slice(0, loadedCount))
+          setIsLoading(false)
+        }, 0)
+      }
+    }
+
+    loadProducts()
+  }, [products, loadedCount])
+
+  const loadMore = useCallback(() => {
+    if (!isLoading && loadedCount < products.length) {
+      setLoadedCount(prev => Math.min(prev + 12, products.length))
+    }
+  }, [isLoading, loadedCount, products.length])
+
+  // ✅ Intersection Observer for infinite scroll
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !isLoading) {
+          loadMore()
+        }
+      },
+      { threshold: 0.1 }
+    )
+
+    const sentinel = document.getElementById('scroll-sentinel')
+    if (sentinel) observer.observe(sentinel)
+
+    return () => observer.disconnect()
+  }, [loadMore, isLoading])
+
+  return (
+    <>
+      <motion.div 
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+      >
+        {visibleProducts.map((product, index) => (
+          <ProductCard
+            key={product.id}
+            product={product}
+            index={index}
+            hoveredId={hoveredId}
+            setHoveredId={setHoveredId}
+          />
+        ))}
+      </motion.div>
+
+      {/* Loading indicator */}
+      {isLoading && (
+        <div className="flex justify-center items-center py-8">
+          <div className="w-8 h-8 border-4 border-gray-300 border-t-red-900 rounded-full animate-spin"></div>
+        </div>
+      )}
+
+      {/* Scroll sentinel for infinite loading */}
+      {loadedCount < products.length && (
+        <div id="scroll-sentinel" className="h-10"></div>
+      )}
+
+      {/* Load more button fallback */}
+      {!isLoading && loadedCount < products.length && (
+        <div className="text-center mt-8">
+          <button
+            onClick={loadMore}
+            className="px-6 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition"
+          >
+            Load More ({products.length - loadedCount} remaining)
+          </button>
+        </div>
+      )}
+    </>
+  )
+})
 
 /**
- * ✅ FIXED: Store component that NEVER calls APIs
- * Uses ONLY the static data passed as props
+ * ✅ OPTIMIZED: Store component with performance enhancements
  */
 export default function StoreSSG({ 
   initialProducts = [], 
   initialSaleProducts = [], 
   initialCategories = [] 
 }) {
-  // 🔒 CRITICAL: Remove all API-related state and functions
-  // Only use the initial data passed from SSG
-  
   const [hoveredId, setHoveredId] = useState(null)
   const [typeFilter, setTypeFilter] = useState("")
   const [brandFilter, setBrandFilter] = useState("")
@@ -80,51 +305,14 @@ export default function StoreSSG({
 
   console.log(`🏪 StoreSSG rendered with ${initialProducts.length} products (STATIC DATA ONLY)`)
 
-  // 🔒 REMOVED: All fetch functions, API calls, and dynamic data loading
-  // The component now works PURELY with the props passed from SSG
-
-  // Product Image Component - no changes needed
-  const ProductImage = ({ product, isHovered, className, priority = false }) => {
-    const [imageSrc, setImageSrc] = useState(product.pictures?.[0] || "/placeholder.png")
-    const [imageError, setImageError] = useState(false)
-
-    // Update image on hover
-    useEffect(() => {
-      if (isHovered && product.pictures?.[1]) {
-        setImageSrc(product.pictures[1])
-      } else if (product.pictures?.[0]) {
-        setImageSrc(product.pictures[0])
-      }
-    }, [isHovered, product.pictures])
-
-    const handleError = () => {
-      if (!imageError) {
-        setImageSrc('/placeholder.png')
-        setImageError(true)
-      }
-    }
-
-    return (
-      <Image
-        src={imageSrc}
-        alt={product.name}
-        fill
-        className={className}
-        onError={handleError}
-        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-        priority={priority}
-      />
-    )
-  }
-
-  // Get brands from STATIC data only
-  const getAllBrands = () => {
+  // ✅ Memoized brands calculation
+  const getAllBrands = useCallback(() => {
     return [...new Set(initialProducts.map(p => p.description).filter(Boolean))]
-  }
+  }, [initialProducts])
 
-  const brands = getAllBrands()
+  const brands = useMemo(() => getAllBrands(), [getAllBrands])
 
-  // 🔒 FIXED: Filtering works on STATIC data only
+  // ✅ Optimized filtering with useMemo and reduced re-calculations
   const filteredProducts = useMemo(() => {
     let filtered = initialProducts.filter((product) => {
       let typeMatch = true
@@ -150,7 +338,7 @@ export default function StoreSSG({
       )
     })
 
-    // Sorting
+    // ✅ Optimized sorting
     return filtered.sort((a, b) => {
       switch (sortBy) {
         case "price-low":
@@ -160,12 +348,13 @@ export default function StoreSSG({
         case "name":
           return a.name.localeCompare(b.name)
         default:
-          return b.id - a.id // newest first
+          return b.id - a.id
       }
     })
   }, [initialProducts, typeFilter, brandFilter, sizeFilter, minPrice, maxPrice, searchTerm, sortBy])
 
-  const clearAllFilters = () => {
+  // ✅ Memoized handlers
+  const clearAllFilters = useCallback(() => {
     setTypeFilter("")
     setBrandFilter("")
     setSizeFilter("")
@@ -173,18 +362,14 @@ export default function StoreSSG({
     setMaxPrice("")
     setSortBy("newest")
     setSearchTerm("")
-  }
+  }, [])
 
-  const handleCategoryClick = (categoryKey) => {
+  const handleCategoryClick = useCallback((categoryKey) => {
     setTypeFilter(categoryKey)
     document.getElementById('products-section')?.scrollIntoView({ 
       behavior: 'smooth' 
     })
-  }
-
-  const getDiscountPercentage = (originalPrice, salePrice) => {
-    return Math.round(((originalPrice - salePrice) / originalPrice) * 100)
-  }
+  }, [])
 
   return (
     <motion.div 
@@ -194,22 +379,6 @@ export default function StoreSSG({
       className="min-h-screen"
     >
       <div className="max-w-7xl mx-auto px-4 py-8 mt-20">
-        {/* 🔒 Static Data Notice for development */}
-        {process.env.NODE_ENV === 'development' && initialProducts.length === 0 && (
-          <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-8">
-            <div className="flex">
-              <div className="ml-3">
-                <p className="text-sm text-yellow-700">
-                  <strong>📄 No Products in Static Data:</strong> 
-                  Go to Dashboard → Update Website to load products.
-                  <br />
-                  <strong>Current mode:</strong> Static data only (no API calls)
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Header */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -219,7 +388,7 @@ export default function StoreSSG({
           <h1 className="text-5xl font-bold mb-4 text-gray-900">Our Fragrance Collection</h1>
           <p className="text-xl mb-8 text-gray-600">Discover premium perfumes and captivating scents</p>
           
-          {/* Search Bar */}
+          {/* Optimized Search Bar */}
           <div className="max-w-md mx-auto relative">
             <svg 
               className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" 
@@ -239,12 +408,12 @@ export default function StoreSSG({
               placeholder="Search fragrances..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-center"
+              className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-red-900 focus:border-transparent text-center"
             />
           </div>
         </motion.div>
 
-        {/* Sale Section - STATIC data only */}
+        {/* Sale Section - Optimized */}
         {initialSaleProducts.length > 0 && (
           <motion.div 
             initial="hidden"
@@ -252,11 +421,8 @@ export default function StoreSSG({
             variants={containerVariants}
             className="mb-16"
           >
-            <motion.div 
-              variants={saleVariants}
-              className="text-center mb-8"
-            >
-              <div className="inline-flex items-center gap-3 bg text-white px-6 py-3 rounded-full mb-4">
+            <motion.div className="text-center mb-8">
+              <div className="inline-flex items-center gap-3 bg-red-900 text-white px-6 py-3 rounded-full mb-4">
                 <FaFire className="text-xl text-white" />
                 <span className="text-lg font-bold text-white">SALE UP TO 50% OFF</span>
                 <FaFire className="text-xl text-white" />
@@ -266,59 +432,19 @@ export default function StoreSSG({
             
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
               {initialSaleProducts.slice(0, 4).map((product, index) => (
-                <motion.div
+                <ProductCard
                   key={`sale-${product.id}`}
-                  variants={itemVariants}
-                  whileHover={{ y: -4, scale: 1.02 }}
-                  className="relative"
-                  onMouseEnter={() => setHoveredId(`sale-${product.id}`)}
-                  onMouseLeave={() => setHoveredId(null)}
-                >
-                  <Link href={`/product/${product.id}`} className="block">
-                    <div className="group bg-white rounded-xl overflow-hidden  transition-all duration-300 cursor-pointer">
-                      <div className="absolute top-3 left-3 text-white bg px-3 py-1 rounded-full text-xs font-bold z-10 flex items-center gap-1">
-                        {getDiscountPercentage(product.price, product.newprice)}% OFF
-                      </div>
-
-                      <div className="relative overflow-hidden h-60 lg:h-96">
-                        <ProductImage
-                          product={product}
-                          isHovered={hoveredId === `sale-${product.id}`}
-                          className="object-cover transition-transform duration-700 group-hover:scale"
-                          priority={index < 2}
-                        />
-                        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                      </div>
-
-                      <div className="p-4">
-                        <h3 className="font-semibold mb-2 line-clamp-2 text-gray-900">
-                          {product.name}
-                        </h3>
-
-                        {product.description && (
-                          <p className="text-sm text-gray-500 mb-2">
-                            {product.description}
-                          </p>
-                        )}
-
-                        <div className="flex items-center gap-2">
-                          <span className="text-lg font-bold text">
-                            {product.newprice} LE
-                          </span>
-                          <span className="text-sm line-through text-gray-400">
-                            {product.price} LE
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </Link>
-                </motion.div>
+                  product={product}
+                  index={index}
+                  hoveredId={hoveredId}
+                  setHoveredId={setHoveredId}
+                />
               ))}
             </div>
           </motion.div>
         )}
 
-        {/* Category Sections - STATIC data only */}
+        {/* Category Sections - Optimized */}
         <motion.div 
           initial="hidden"
           animate="visible"
@@ -328,86 +454,31 @@ export default function StoreSSG({
           <h2 className="text-3xl font-bold text-gray-900 text-center mb-8">Shop by Category</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {initialCategories.map((category) => {
-              // Calculate category products from STATIC data
-              const categoryProducts = initialProducts.filter(product => {
-                if (category.key === "women") {
-                  return product.type === "women"
-                } else if (category.key === "men") {
-                  return product.type === "men"
-                } else if (category.key === "Box") {
-                  return product.type === "master"
-                } 
-              })
-              
-              return (
-                <motion.div
-                  key={category.key}
-                  variants={categoryVariants}
-                  whileHover={{ scale: 1.02, y: -4 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="bg-gradient-to-br cursor-pointer p-8 text-center relative overflow-hidden rounded-2xl  transition-all duration-300 text-white min-h-[300px] flex items-center justify-center"
-                  onClick={() => handleCategoryClick(category.key)}
-                  style={{
-                    backgroundImage: category.image ? `linear-gradient(135deg, rgba(0,0,0,0.4), rgba(0,0,0,0.6)), url(${category.image})` : undefined,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    backgroundRepeat: 'no-repeat'
-                  }}
-                >
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full -translate-y-16 translate-x-16"></div>
-                  <div className="absolute bottom-0 left-0 w-24 h-24 bg-white opacity-10 rounded-full translate-y-12 -translate-x-12"></div>
-                  
-                  <div className="relative z-10">
-                    <h3 className="text-3xl font-bold mb-3 capitalize text-white">{category.name}</h3>
-
-                  </div>
-                  
-                  {typeFilter === category.key && (
-                    <div className="absolute top-4 right-4 bg-white text-gray-900 px-3 py-1 rounded-full text-sm font-bold">
-                      Active
-                    </div>
-                  )}
-                </motion.div>
-              )
-            })}
+            {initialCategories.map((category) => (
+              <CategoryCard
+                key={category.key}
+                category={category}
+                onClick={handleCategoryClick}
+                isActive={typeFilter === category.key}
+              />
+            ))}
           </div>
         </motion.div>
 
-        {/* Products Section - STATIC data only */}
+        {/* Products Section with Virtual Scrolling */}
         <div id="products-section">
-          {/* Filters */}
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="bg-white rounded-xl  p-6 mb-8 border border-gray-200"
-          >
-            {/* Active Category Display */}
-            {typeFilter && (
-              <div className="mb-4 p-4 bg-red-50 rounded-lg border border-red-200">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm font-medium text-gray-700">Filtering by:</span>
-                    <span className="bg text-white px-3 py-1 rounded-full text-sm font-medium">
-                      {initialCategories.find(c => c.key === typeFilter)?.name}
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => setTypeFilter("")}
-                    className="text hover:text-red-700 text-sm font-medium"
-                  >
-                    Clear Category
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Filter Controls */}
-            <div className="flex flex-wrap items-center gap-3 mb-4">
+          {/* Results Counter */}
+          <div className="flex justify-between items-center mb-6">
+            <p className="text-gray-600">
+              Showing <span className="font-semibold text-gray-900">{filteredProducts.length}</span> of <span className="font-semibold text-gray-900">{initialProducts.length}</span> fragrances
+            </p>
+            
+            {/* Quick sort and clear */}
+            <div className="flex gap-3">
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="px-4 py-3 border border-gray-300 bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 text-gray-900"
+                className="px-4 py-2 border border-gray-300 bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-red-900 text-gray-900"
               >
                 <option value="newest">Newest First</option>
                 <option value="price-low">Price: Low to High</option>
@@ -415,173 +486,21 @@ export default function StoreSSG({
                 <option value="name">Name A-Z</option>
               </select>
               
-              <div className="ml-auto flex gap-3">
-                <button
-                  className="px-4 py-3 bg hover:bg-red-700 rounded-lg text-sm font-medium text-white transition-colors"
-                  onClick={clearAllFilters}
-                >
-                  Clear All
-                </button>
-                
-                <button
-                  className="p-3 bg hover:bg-red-700 text-white rounded-lg transition-colors"
-                  onClick={() => setShowFilters(!showFilters)}
-                >
-                  {showFilters ? 
-                    <FaFilterCircleXmark className="w-5 h-5" /> : 
-                    <FaFilter className="w-5 h-5" />
-                  }
-                </button>
-              </div>
+              <button
+                className="px-4 py-2 bg-red-900 hover:bg-red-600 rounded-lg text-sm font-medium text-white transition-colors"
+                onClick={clearAllFilters}
+              >
+                Clear All
+              </button>
             </div>
-
-            {/* Advanced Filters */}
-            <AnimatePresence>
-              {showFilters && (
-                <motion.div 
-                  variants={filterVariants}
-                  initial="hidden"
-                  animate="visible"
-                  exit="hidden"
-                  className="overflow-hidden"
-                >
-                  <div className="flex flex-wrap gap-4 pt-6 border-t border-gray-200">
-                    <select
-                      value={brandFilter}
-                      onChange={(e) => setBrandFilter(e.target.value)}
-                      className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-                    >
-                      <option value="">All Brands</option>
-                      {brands.map(brand => (
-                        <option key={brand} value={brand}>{brand}</option>
-                      ))}
-                    </select>
-
-                    <select
-                      value={sizeFilter}
-                      onChange={(e) => setSizeFilter(e.target.value)}
-                      className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-                    >
-                      <option value="">All Sizes</option>
-                      <option value="50ml">50ml</option>
-                      <option value="100ml">100ml</option>
-                      <option value="150ml">150ml</option>
-                      <option value="200ml">200ml</option>
-                      <option value="250ml">250ml</option>
-                    </select>
-
-                    <div className="flex items-center gap-3">
-                      <span className="text-sm font-medium text-gray-700">Price:</span>
-                      <input
-                        type="number"
-                        placeholder="Min"
-                        value={minPrice}
-                        onChange={(e) => setMinPrice(e.target.value)}
-                        className="w-24 px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-                      />
-                      <span className="text-gray-500">—</span>
-                      <input
-                        type="number"
-                        placeholder="Max"
-                        value={maxPrice}
-                        onChange={(e) => setMaxPrice(e.target.value)}
-                        className="w-24 px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-                      />
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.div>
-
-          {/* Results Counter */}
-          <div className="flex justify-between items-center mb-6">
-            <p className="text-gray-600">
-              Showing <span className="font-semibold text-gray-900">{filteredProducts.length}</span> of <span className="font-semibold text-gray-900">{initialProducts.length}</span> fragrances
-              {typeFilter && (
-                <span className="ml-2 text-sm">
-                  in <span className="font-semibold">{initialCategories.find(c => c.key === typeFilter)?.name}</span>
-                </span>
-              )}
-              {searchTerm && (
-                <span className="ml-2 text-sm">
-                  for "<span className="font-semibold">{searchTerm}</span>"
-                </span>
-              )}
-            </p>
           </div>
 
-          {/* Product Grid - STATIC data only */}
-          <motion.div 
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-          >
-            {filteredProducts.map((product, index) => (
-              <motion.div
-                key={product.id}
-                variants={itemVariants}
-                whileHover={{ y: -4, scale: 1.02 }}
-                onMouseEnter={() => setHoveredId(product.id)}
-                onMouseLeave={() => setHoveredId(null)}
-              >
-                <Link href={`/product/${product.id}`} className="block">
-                  <div className="group bg-white rounded-xl overflow-hidden  transition-all duration-300 cursor-pointer">
-                    <div className="relative overflow-hidden h-60 md:h-72 lg:h-96 bg-gray-50">
-                      <ProductImage
-                        product={product}
-                        isHovered={hoveredId === product.id}
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
-                        priority={index < 8}
-                      />
-
-                      {product.newprice && (
-                        <div className="absolute top-3 left-3 text-white bg px-3 py-1 rounded-full text-xs font-bold z-10 flex items-center gap-1">
-                          {getDiscountPercentage(product.price, product.newprice)}% OFF
-                        </div>
-                      )}
-
-                      {product.sizes?.length > 0 && (
-                        <div className="absolute bottom-3 right-3 bg-black text-white px-2 py-1 rounded text-xs">
-                          {product.sizes[0]}
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="p-4">
-                      <h3 className="font-medium text-gray-900 mb-2 line-clamp-2">
-                        {product.name}
-                      </h3>
-                      
-                      {product.description && (
-                        <p className="text-sm text-gray-500 mb-3">
-                          {product.description}
-                        </p>
-                      )}
-                      
-                      <div className="flex items-center justify-between mb-4">
-                        {product.newprice ? (
-                          <div className="flex items-center gap-2">
-                            <span className="text-lg font-semibold text-gray-900">
-                              {product.newprice} LE
-                            </span>
-                            <span className="text-sm text-gray-500 line-through">
-                              {product.price} LE
-                            </span>
-                          </div>
-                        ) : (
-                          <span className="text-lg font-semibold text-gray-900">
-                            {product.price} LE
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              </motion.div>
-            ))}
-          </motion.div>
+          {/* Virtual Product Grid */}
+          <VirtualProductGrid
+            products={filteredProducts}
+            hoveredId={hoveredId}
+            setHoveredId={setHoveredId}
+          />
         </div>
       </div>
     </motion.div>

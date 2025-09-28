@@ -215,12 +215,12 @@ export const dynamic = 'force-static'
 export const fetchCache = 'force-cache'
 
 export const metadata = {
-  title: "مجموعة العطور - عطور فاخرة ومميزة | Savio Fragrances",
-  description: "اكتشف مجموعتنا المميزة من العطور الفاخرة للرجال والنساء. عطور أصلية، أسعار تنافسية، وتوصيل سريع في مصر. يتم تحديث المنتجات تلقائياً.",
-  keywords: "عطور, fragrances, عطور نسائية, عطور رجالية, master box, عطور فاخرة, Egypt, Savio Fragrances, عطور أصلية",
+  title: "Perfume Collection - Luxury & Unique Fragrances | Savio Fragrances",
+  description: "Discover our exclusive collection of luxury perfumes for men and women. Authentic fragrances, competitive prices, and fast delivery in Egypt. Products are automatically updated.",
+  keywords: "perfumes, fragrances, women perfumes, men perfumes, master box, luxury perfumes, Egypt, Savio Fragrances, authentic perfumes",
   openGraph: {
-    title: "مجموعة العطور - عطور فاخرة ومميزة",
-    description: "عطور فاخرة بأسعار تنافسية مع ضمان الأصالة وتحديث تلقائي للمنتجات",
+    title: "Perfume Collection - Luxury & Unique Fragrances",
+    description: "Luxury perfumes at competitive prices with authenticity guarantee and automatic product updates",
     type: "website"
   }
 }

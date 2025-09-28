@@ -36,7 +36,7 @@ export default function Navbar() {
           {/* ✅ Logo */}
           <motion.div whileHover={{ scale: 1.05 }} transition={{ duration: 0.2 }}>
             <Image
-              src={scrolled ? "/darklogo.png" : "/whitelogo.png"}
+              src={scrolled ? "/darklogo.webp" : "/whitelogo.webp"}
               alt="Logo"
               width={60}
               height={60}

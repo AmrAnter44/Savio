@@ -1,6 +1,6 @@
 "use client";
 import React from 'react'
-import logo from '../../public/whitelogo.png'
+import logo from '../../public/whitelogo.webp'
 import Image from 'next/image'
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCartShopping } from "@fortawesome/free-solid-svg-icons";
