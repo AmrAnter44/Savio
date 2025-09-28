@@ -49,7 +49,7 @@ export default function AddFragranceProduct() {
     "Chanel", "Dior", "Tom Ford", "Creed", "Hermès", "Yves Saint Laurent",
     "Versace", "Gucci", "Prada", "Armani", "Calvin Klein", "Hugo Boss",
     "Dolce & Gabbana", "Viktor & Rolf", "Jean Paul Gaultier", "Thierry Mugler",
-    "Maison Margiela", "Byredo", "Le Labo", "Diptyque","Lattfa", "Other"
+    "Maison Margiela", "Byredo", "Le Labo", "Diptyque","Lattafa", "Other"
   ]
 
   const handleCheckboxChange = (value, state, setState) => {
