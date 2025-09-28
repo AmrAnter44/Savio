@@ -46,11 +46,33 @@ export default function AddFragranceProduct() {
   const sizeOptions = ["50ml", "100ml", "150ml", "200ml", "250ml"]
   const typeOptions = ["women", "men", "master","unisex"] // master for Box category
   const brandOptions = [
-    "Chanel", "Dior", "Tom Ford", "Creed", "Hermès", "Yves Saint Laurent",
-    "Versace", "Gucci", "Prada", "Armani", "Calvin Klein", "Hugo Boss",
-    "Dolce & Gabbana", "Viktor & Rolf", "Jean Paul Gaultier", "Thierry Mugler",
-    "Maison Margiela", "Byredo", "Le Labo", "Diptyque","Lattafa", "Other"
-  ]
+const perfumeBrands = [
+  // عالمية مشهورة
+  "Chanel", "Dior", "Tom Ford", "Creed", "Hermès", "Yves Saint Laurent",
+  "Versace", "Gucci", "Prada", "Armani", "Calvin Klein", "Hugo Boss",
+  "Dolce & Gabbana", "Viktor & Rolf", "Jean Paul Gaultier", "Thierry Mugler",
+  "Maison Margiela", "Byredo", "Le Labo", "Diptyque", "Jo Malone",
+  "Lancôme", "Givenchy", "Bvlgari", "Cartier", "Burberry", "Salvatore Ferragamo",
+  "Montblanc", "Carolina Herrera", "Valentino", "Marc Jacobs", "Kenzo",
+  "Issey Miyake", "Paco Rabanne", "Balenciaga", "Azzaro", "Narciso Rodriguez",
+  "Zara", "Abercrombie & Fitch", "Victoria's Secret", "Bath & Body Works",
+  
+  // نيش niche brands
+  "Amouage", "Parfums de Marly", "Initio", "Kilian", "Clive Christian",
+  "Xerjoff", "Roja Parfums", "Tiziana Terenzi", "Mancera", "Montale",
+  "Maison Francis Kurkdjian", "Ormonde Jayne", "Penhaligon's",
+  "Acqua di Parma", "Guerlain", "Etat Libre d’Orange", "Frederic Malle",
+  
+  // عربية وخليجية
+  "Arabian Oud", "Ajmal", "Rasasi", "Al Haramain", "Swiss Arabian",
+  "Nabeel", "Khaltat", "Ard Al Zaafaran", "Lattafa", "Asgharali",
+  "Shaikh Perfumes", "Oud Elite", "Khaleejiyah", "Makkaj",
+  
+  // خيار عام
+  "Other"
+];
+
+  
 
   const handleCheckboxChange = (value, state, setState) => {
     if (state.includes(value)) {
