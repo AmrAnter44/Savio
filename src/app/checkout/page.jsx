@@ -209,7 +209,7 @@ export default function CheckoutPage() {
     message += ` Expected delivery: 2-4 business days\n\n`;
     message += `Thank you for choosing Savio Fragrances! `;
 
-    const yourWhatsAppNumber = "201063439705";
+    const yourWhatsAppNumber = "201155060205";
     const encodedMessage = encodeURIComponent(message);
 
     window.open(`https://wa.me/${yourWhatsAppNumber}?text=${encodedMessage}`, "_blank");

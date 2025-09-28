@@ -31,7 +31,7 @@ export default function NavT() {
               )}
             </Link>
 
-            <Link href="https://wa.me/+201070001014" className='m-2' area-label="whatsapp" >
+            <Link href="https://wa.me/+201155060205" className='m-2' area-label="whatsapp" >
               <FontAwesomeIcon className="fa-brands fa-whatsapp text-white text-3xl" icon={faWhatsapp} />
             </Link>
             </div>

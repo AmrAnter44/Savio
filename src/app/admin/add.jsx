@@ -44,12 +44,12 @@ export default function AddFragranceProduct() {
 
   // Updated options for fragrances
   const sizeOptions = ["50ml", "100ml", "150ml", "200ml", "250ml"]
-  const typeOptions = ["women", "men", "master"] // master for Box category
+  const typeOptions = ["women", "men", "master","unisex"] // master for Box category
   const brandOptions = [
     "Chanel", "Dior", "Tom Ford", "Creed", "Hermès", "Yves Saint Laurent",
     "Versace", "Gucci", "Prada", "Armani", "Calvin Klein", "Hugo Boss",
     "Dolce & Gabbana", "Viktor & Rolf", "Jean Paul Gaultier", "Thierry Mugler",
-    "Maison Margiela", "Byredo", "Le Labo", "Diptyque", "Other"
+    "Maison Margiela", "Byredo", "Le Labo", "Diptyque","Lattfa", "Other"
   ]
 
   const handleCheckboxChange = (value, state, setState) => {
