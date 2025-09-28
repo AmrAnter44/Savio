@@ -55,7 +55,7 @@ export default function AddFragranceProduct() {
   "Lancôme", "Givenchy", "Bvlgari", "Cartier", "Burberry", "Salvatore Ferragamo",
   "Montblanc", "Carolina Herrera", "Valentino", "Marc Jacobs", "Kenzo",
   "Issey Miyake", "Paco Rabanne", "Balenciaga", "Azzaro", "Narciso Rodriguez",
-  "Zara", "Abercrombie & Fitch", "Victoria's Secret", "Bath & Body Works","Rabanne" ,"Gissah","Roberto Cavalli ",
+  "Zara", "Abercrombie & Fitch", "Victoria's Secret", "Bath & Body Works","Rabanne" ,"Gissah","Roberto Cavalli ","Nishane",
   
   // نيش niche brands
   "Amouage", "Parfums de Marly", "Initio", "Kilian", "Clive Christian",
