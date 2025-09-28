@@ -60,7 +60,7 @@ export default function AddFragranceProduct() {
   // نيش niche brands
   "Amouage", "Parfums de Marly", "Initio", "Kilian", "Clive Christian",
   "Xerjoff", "Roja Parfums", "Tiziana Terenzi", "Mancera", "Montale",
-  "Maison Francis Kurkdjian", "Ormonde Jayne", "Penhaligon's",
+  "Maison Francis Kurkdjian", "Ormonde Jayne", "Penhaligon's","Armaf",
   "Acqua di Parma", "Guerlain", "Etat Libre d’Orange", "Frederic Malle",
   
   // عربية وخليجية
