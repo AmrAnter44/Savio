@@ -46,7 +46,7 @@ export default function AddFragranceProduct() {
   const sizeOptions = ["50ml", "100ml", "150ml", "200ml", "250ml"]
   const typeOptions = ["women", "men", "master","unisex"] // master for Box category
   const brandOptions = [
-const perfumeBrands = [
+
   // عالمية مشهورة
   "Chanel", "Dior", "Tom Ford", "Creed", "Hermès", "Yves Saint Laurent",
   "Versace", "Gucci", "Prada", "Armani", "Calvin Klein", "Hugo Boss",
@@ -66,7 +66,7 @@ const perfumeBrands = [
   // عربية وخليجية
   "Arabian Oud", "Ajmal", "Rasasi", "Al Haramain", "Swiss Arabian",
   "Nabeel", "Khaltat", "Ard Al Zaafaran", "Lattafa", "Asgharali",
-  "Shaikh Perfumes", "Oud Elite", "Khaleejiyah", "Makkaj",
+  "Shaikh Perfumes", "Oud Elite", "Khaleejiyah", "Makkaj","de Marly",
   
   // خيار عام
   "Other"
