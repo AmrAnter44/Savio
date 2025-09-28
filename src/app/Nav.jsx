@@ -52,7 +52,7 @@ export default function Navbar() {
                 whileTap={{ scale: 0.9 }}
                 transition={{ duration: 0.2 }}
               >
-                <Link href="/cart" className="relative m-2">
+                <Link href="/cart" className="relative m-2" area-label="Cart">
                   <FontAwesomeIcon
                     className={`fa-solid fa-cart-shopping text-2xl w-8 ${
                       scrolled ? "text" : "text-white"
@@ -82,7 +82,7 @@ export default function Navbar() {
                 whileTap={{ scale: 0.9 }}
                 transition={{ duration: 0.2 }}
               >
-                <Link href="https://wa.me/+201063439705" className="m-2">
+                <Link href="https://wa.me/+201063439705" className="m-2" area-label="WhatsApp" >
                   <FontAwesomeIcon
                     className={`fa-brands fa-whatsapp text-3xl w-9 mr-6 ${
                       scrolled ? "text" : "text-white"

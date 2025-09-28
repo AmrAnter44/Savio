@@ -17,7 +17,7 @@ export default function NavT() {
     
       <div className="sticky top-0 bg  z-50 p-4">
         <div className=" h-16 flex items-center justify-between text-2xl font-bold text  ">
-          <Link href="/"><Image src={logo} width={60} height={60} className="ml-8" alt="logo" /> </Link>
+          <Link href="/"><Image src={logo} width={60} height={60} className="ml-8" alt="logo" area-label="logo" /> </Link>
 
           <div className="flex items-center gap-2 lg:gap-4 mr-4 lg:mr-9">
 
@@ -31,7 +31,7 @@ export default function NavT() {
               )}
             </Link>
 
-            <Link href="https://wa.me/+201070001014" className='m-2'>
+            <Link href="https://wa.me/+201070001014" className='m-2' area-label="whatsapp" >
               <FontAwesomeIcon className="fa-brands fa-whatsapp text-white text-3xl" icon={faWhatsapp} />
             </Link>
             </div>

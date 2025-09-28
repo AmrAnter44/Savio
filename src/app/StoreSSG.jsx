@@ -100,7 +100,7 @@ const CategoryCard = memo(({ category, onClick, isActive }) => (
     <div className="absolute bottom-0 left-0 w-24 h-24 bg-white opacity-10 rounded-full translate-y-12 -translate-x-12"></div>
     
     <div className="relative z-10">
-      <h3 className="text-3xl font-bold mb-3 capitalize text-white">{category.name}</h3>
+      <h2 className="text-3xl font-bold mb-3 capitalize text-white">{category.name}</h2>
       <p className="text-white/80">{category.count} products</p>
     </div>
     
@@ -154,9 +154,9 @@ const ProductCard = memo(({ product, index, hoveredId, setHoveredId }) => {
           </div>
 
           <div className="p-4">
-            <h3 className="font-medium text-gray-900 mb-2 line-clamp-2">
+            <h2 className="font-medium text-gray-900 mb-2 line-clamp-2">
               {product.name}
-            </h3>
+            </h2>
             
             {product.description && (
               <p className="text-sm text-gray-900 mb-3">
@@ -475,16 +475,21 @@ export default function StoreSSG({
             
             {/* Quick sort and clear */}
             <div className="flex gap-3">
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="px-4 py-2 border border-gray-300 bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-red-900 text-gray-900"
-              >
-                <option value="newest">Newest First</option>
-                <option value="price-low">Price: Low to High</option>
-                <option value="price-high">Price: High to Low</option>
-                <option value="name">Name A-Z</option>
-              </select>
+<label htmlFor="sortBy" className="sr-only">
+  Sort products by
+</label>
+<select
+  id="sortBy"
+  value={sortBy}
+  onChange={(e) => setSortBy(e.target.value)}
+  className="px-4 py-2 border border-gray-300 bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-red-900 text-gray-900"
+>
+  <option value="newest">Newest First</option>
+  <option value="price-low">Price: Low to High</option>
+  <option value="price-high">Price: High to Low</option>
+  <option value="name">Name A-Z</option>
+</select>
+
               
               <button
                 className="px-4 py-2 bg-red-900 hover:bg-red-600 rounded-lg text-sm font-medium text-white transition-colors"
