@@ -69,7 +69,7 @@ export default function Navbar() {
                         stiffness: 500,
                         damping: 30,
                       }}
-                      className="absolute -top-3 left-4 bg-white text-purple-600 text-xs w-5 h-5 flex items-center justify-center rounded-full"
+                      className="absolute -top-3 left-4 bg-white text-red-600 text-xs w-5 h-5 flex items-center justify-center rounded-full"
                     >
                       {cartCount}
                     </motion.span>
