@@ -102,7 +102,7 @@ export default function RelatedProducts({ currentProduct }) {
                   />
 
                   {product.newprice && (
-                    <div className="absolute top-3 left-3 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold">
+                    <div className="absolute top-3 left-3 bg text-white px-3 py-1 rounded-full text-xs font-bold">
                       {getDiscountPercentage(product.price, product.newprice)}% OFF
                     </div>
                   )}
