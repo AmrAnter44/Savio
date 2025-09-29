@@ -2,7 +2,7 @@ import "./globals.css";
 import { MyContextProvider } from "../context/CartContext";
 import { Outfit } from "next/font/google";
 import Footer from "./Footer";
-import ClientLayoutWrapper from "./ClientLayoutWrapper";
+import Nav from "./Nav";
 import { Analytics } from "@vercel/analytics/react"
 
 // ✅ Optimized font loading
@@ -126,9 +126,9 @@ export default function RootLayout({ children }) {
         <Analytics mode="production" />
         
         <MyContextProvider>
-          <ClientLayoutWrapper className="flex-1">
+          <Nav/>
             {children}
-          </ClientLayoutWrapper>
+
           <Footer />
         </MyContextProvider>
 
