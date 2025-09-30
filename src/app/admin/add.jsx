@@ -43,7 +43,7 @@ export default function AddFragranceProduct() {
   const [uploadingImages, setUploadingImages] = useState(false)
 
   // Updated options for fragrances
-  const sizeOptions = ["30ml","50ml","70ml","90ml", "100ml","120ml", "150ml", "200ml", "250ml"]
+  const sizeOptions = ["30ml","50ml","70ml","90ml", "75ml", "100ml","120ml","125ml", "150ml", "200ml", "250ml",]
   const typeOptions = ["women", "men", "master","unisex"] // master for Box category
   const brandOptions = [
 

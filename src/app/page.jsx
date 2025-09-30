@@ -5,7 +5,7 @@ export default function Home() {
   return <>
 
 <Nav></Nav>
-  <Store></Store>
+<Store></Store>
   
   </>
 }
