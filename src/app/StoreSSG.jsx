@@ -334,7 +334,10 @@ export default function StoreSSG({
         (!sizeFilter || product.sizes?.includes(sizeFilter)) &&
         (!minPrice || product.price >= parseFloat(minPrice)) &&
         (!maxPrice || product.price <= parseFloat(maxPrice)) &&
-        (!searchTerm || product.name.toLowerCase().includes(searchTerm.toLowerCase()))
+(!searchTerm || 
+  product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  product.description?.toLowerCase().includes(searchTerm.toLowerCase())
+)
       )
     })
 
