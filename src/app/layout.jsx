@@ -1,15 +1,17 @@
+// app/layout.jsx
 import "./globals.css";
+import "./critical.css"; // 👈 استورد الـ CSS هنا
 import { MyContextProvider } from "../context/CartContext";
 import { Outfit } from "next/font/google";
 import Footer from "./Footer";
 import Nav from "./Nav";
 import { Analytics } from "@vercel/analytics/react"
+import SplashScreen from "./SplashScreen";
 
-// ✅ Optimized font loading
 const outfit = Outfit({ 
   subsets: ["latin"], 
   weight: ["400","500","600","700","800","900"],
-  display: 'swap', // Improve font loading performance
+  display: 'swap',
   preload: true,
   variable: '--font-outfit',
 });
@@ -41,63 +43,14 @@ export const metadata = {
     },
   },
   verification: {
-    google: 'your-google-verification-code', // Replace with your actual verification code
+    google: 'your-google-verification-code',
   }
 };
-
-
-// ✅ Critical CSS for instant loading
-const criticalCSS = `
-  :root {
-    --color-primary: #85242C;
-    --font-outfit: ${outfit.style.fontFamily};
-  }
-  
-  .bg { 
-    background-color: var(--color-primary); 
-  }
-  
-  .text { 
-    color: var(--color-primary); 
-  }
-  
-  body {
-    font-family: var(--font-outfit), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    margin: 0;
-    padding: 0;
-    min-height: 100vh;
-  }
-  
-  /* Loading skeleton styles */
-  .skeleton {
-    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-    background-size: 200% 100%;
-    animation: loading 1.5s infinite;
-  }
-  
-  @keyframes loading {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
-  }
-
-  /* Prevent layout shift */
-  .product-image-placeholder {
-    background-color: #f8f9fa;
-    width: 100%;
-    height: 300px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-`;
 
 export default function RootLayout({ children }) {
   return (
     <html lang="ar" dir="ltr" className={`${outfit.variable} h-full`}>
       <head>
-        {/* ✅ Critical CSS inline for instant loading */}
-        <style dangerouslySetInnerHTML={{ __html: criticalCSS }} />
-        
         {/* ✅ Preconnect to external domains */}
         <link rel="preconnect" href="https://lblljhoouydfvekihqka.supabase.co" />
         <link rel="dns-prefetch" href="https://lblljhoouydfvekihqka.supabase.co" />
@@ -122,17 +75,15 @@ export default function RootLayout({ children }) {
       </head>
       
       <body className={`${outfit.className} antialiased flex flex-col min-h-screen`}>
-        {/* ✅ Analytics with optimized loading */}
         <Analytics mode="production" />
         
         <MyContextProvider>
           <Nav/>
-            {children}
-
+          <SplashScreen />
+          {children}
           <Footer />
         </MyContextProvider>
 
-        {/* ✅ Service Worker registration */}
         <script
           dangerouslySetInnerHTML={{
             __html: `

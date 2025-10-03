@@ -38,25 +38,25 @@ export default function Navbar() {
             <Image
               src={scrolled ? "/darklogo.webp" : "/whitelogo.webp"}
               alt="Logo"
-              width={60}
-              height={60}
+              width={45}
+              height={45}
               className="object-contain"
             />
           </motion.div>
 
           {/* ✅ Links */}
           <div className="flex gap-4">
-            <div className=" h-16 flex items-center justify-between text-2xl font-bold text ">
+            <div className=" flex items-center justify-between text-xl font-bold text ">
               <motion.div
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 transition={{ duration: 0.2 }}
               >
-                <Link href="/cart" className="relative m-2" area-label="Cart">
+                <Link href="/cart" className="relative mx-2" area-label="Cart">
                   <FontAwesomeIcon
                     className={`fa-solid fa-cart-shopping text-2xl w-8 ${
                       scrolled ? "text" : "text-white"
-                    } shadow-2xl shadow-black`}
+                    } shadow-xl `}
                     icon={faCartShopping}
                   />
                   {cartCount > 0 && (
@@ -84,9 +84,9 @@ export default function Navbar() {
               >
                 <Link href="https://wa.me/+201155060205" className="m-2" area-label="WhatsApp" >
                   <FontAwesomeIcon
-                    className={`fa-brands fa-whatsapp text-3xl w-9 mr-6 ${
+                    className={`fa-brands fa-whatsapp text-3xl lg:w-9 lg:mr-6 ${
                       scrolled ? "text" : "text-white"
-                    } shadow-2xl shadow-black`}
+                    }  `}
                     icon={faWhatsapp}
                   />
                 </Link>

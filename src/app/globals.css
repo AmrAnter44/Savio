@@ -248,3 +248,89 @@ body {
     background-color: #000;
   }
 }
+/* app/splash.css */
+
+.splash-container {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  overflow: hidden;
+}
+
+/* النصين - الخلفية البيضا */
+.splash-door {
+  position: absolute;
+  top: 0;
+  width: 50%;
+  height: 100%;
+  background-color: white;
+  animation: doorSlide 0.8s ease-in-out forwards;
+  animation-delay: 1.3s; /* بعد ما اللوجو يخلص لفته */
+}
+
+.splash-door-left {
+  left: 0;
+  animation-name: slideLeft;
+}
+
+.splash-door-right {
+  right: 0;
+  animation-name: slideRight;
+}
+
+/* اللوجو */
+.splash-logo-wrapper {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  animation: logoFade 0.4s ease-out forwards;
+  animation-delay: 1s; /* يختفي قبل ما الشباك ينفتح */
+}
+
+.splash-logo {
+  width: 96px;
+  height: 96px;
+  background-color: #85242C;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.875rem;
+  font-weight: bold;
+  animation: logoSpin 1s ease-in-out forwards;
+}
+
+/* الأنيميشنات */
+@keyframes logoSpin {
+  from {
+    transform: rotate(0deg) scale(0.5);
+    opacity: 0;
+  }
+  to {
+    transform: rotate(360deg) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes logoFade {
+  to {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+}
+
+@keyframes slideLeft {
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes slideRight {
+  to {
+    transform: translateX(100%);
+  }
+}
