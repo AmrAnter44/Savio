@@ -301,11 +301,11 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
               >
                 <div className="flex items-center gap-3 text-sm text-gray-600">
                   <span className="text-lg">🚚</span>
-                  <span>Free shipping over 2000 LE</span>
+                  <span>Free shipping over 1500 LE</span>
                 </div>
                 <div className="flex items-center gap-3 text-sm text-gray-600">
                   <span className="text-lg">🔄</span>
-                  <span>30-day returns</span>
+                  <span>24 Hour returns</span>
                 </div>
                 <div className="flex items-center gap-3 text-sm text-gray-600">
                   <span className="text-lg">⭐</span>
