@@ -7,16 +7,12 @@ import RelatedProducts from "../../RelatedProducts"
 import { useMyContext } from "../../../context/CartContext"
 import toast, { Toaster } from 'react-hot-toast'
 
-/**
- * ✅ FIXED: ProductDetailClient now receives data as props (SSG compatible)
- */
 export default function ProductDetailClient({ product, relatedProducts = [] }) {
   const { addToCart } = useMyContext()
   const [selectedSize, setSelectedSize] = useState("")
   const [selectedImage, setSelectedImage] = useState("")
   const [added, setAdded] = useState(false)
 
-  // ✅ Initialize state when component mounts
   useState(() => {
     if (product) {
       setSelectedSize(product.sizes?.[0] || "")
@@ -24,7 +20,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
     }
   }, [product])
 
-  // Animation variants
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -44,7 +40,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
       transition: { duration: 0.5 }
     }
   }
-
+console.log(product);
   const handleAddToCart = () => {
     if (!selectedSize) {
       toast.error("Please select a size first!", {
@@ -75,7 +71,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
     }
   }
 
-  // ✅ Handle missing product
+
   if (!product) {
     return (
       <motion.div 
@@ -98,8 +94,6 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
         position="top-right"
         reverseOrder={false}
         gutter={8}
-        containerClassName=""
-        containerStyle={{}}
         toastOptions={{
           duration: 3000,
           style: {
@@ -313,7 +307,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                 </div>
               </motion.div>
 
-              {/* Fragrance Notes */}
+              {/* ✅ Fragrance Notes - يتم عرضها من السيرفر */}
               <motion.div 
                 className="bg-gray-50 rounded-lg p-4 mt-6"
                 variants={itemVariants}
@@ -322,15 +316,21 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                   <div>
                     <span className="font-medium text-gray-700">Top Notes</span>
-                    <p className="text-gray-600">Fresh & Citrusy</p>
+                    <p className="text-gray-600">
+                      {product.top_notes || "Fresh & Citrusy"}
+                    </p>
                   </div>
                   <div>
                     <span className="font-medium text-gray-700">Heart Notes</span>
-                    <p className="text-gray-600">Floral & Elegant</p>
+                    <p className="text-gray-600">
+                      {product.heart_notes || "Floral & Elegant"}
+                    </p>
                   </div>
                   <div>
                     <span className="font-medium text-gray-700">Base Notes</span>
-                    <p className="text-gray-600">Warm & Lasting</p>
+                    <p className="text-gray-600">
+                      {product.base_notes || "Warm & Lasting"}
+                    </p>
                   </div>
                 </div>
               </motion.div>
@@ -338,7 +338,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
           </motion.div>
         </motion.div>
 
-        {/* Related Products - Pass relatedProducts as prop */}
+        {/* Related Products */}
         <motion.div
           variants={itemVariants}
           transition={{ delay: 0.3 }}
@@ -355,7 +355,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
 }
 
 /**
- * ✅ NEW: Static Related Products Component for SSG
+ * ✅ Static Related Products Component for SSG
  */
 function RelatedProductsSSG({ products, currentProduct }) {
   if (!products || products.length === 0) return null

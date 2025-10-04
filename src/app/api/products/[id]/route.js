@@ -59,9 +59,11 @@ export async function PUT(request, { params }) {
     
     // Clean data for update
     const updateData = {}
+    // ✅ أضفنا top_notes, heart_notes, base_notes
     const allowedFields = [
       'name', 'price', 'newprice', 'brand', 
-      'pictures', 'sizes', 'type'
+      'pictures', 'sizes', 'type',
+      'top_notes', 'heart_notes', 'base_notes'  // ✅ الحقول الجديدة
     ]
     
     allowedFields.forEach(field => {
@@ -69,6 +71,7 @@ export async function PUT(request, { params }) {
         if (field === 'price' || field === 'newprice') {
           updateData[field] = body[field] ? parseFloat(body[field]) : null
         } else {
+          // ✅ نسمح بـ null للـ Notes
           updateData[field] = body[field]
         }
       }
@@ -98,7 +101,7 @@ export async function PUT(request, { params }) {
       )
     }
     
-    console.log('Product updated successfully')
+    console.log('Product updated successfully:', data)
     return NextResponse.json(data)
     
   } catch (error) {

@@ -26,9 +26,6 @@ const inputVariants = {
   }
 }
 
-/**
- * Add Fragrance Product with Strict Manual Update Messages
- */
 export default function AddFragranceProduct() {
   const [name, setName] = useState("")
   const [price, setPrice] = useState("")
@@ -41,38 +38,32 @@ export default function AddFragranceProduct() {
   const [message, setMessage] = useState("")
   const [newprice, setNewprice] = useState("")
   const [uploadingImages, setUploadingImages] = useState(false)
+  
+  // ✅ حقول Notes الجديدة (فارغة - اختيارية)
+  const [topNotes, setTopNotes] = useState("")
+  const [heartNotes, setHeartNotes] = useState("")
+  const [baseNotes, setBaseNotes] = useState("")
 
-  // Updated options for fragrances
-  const sizeOptions = ["30ml","50ml","70ml","90ml", "75ml", "100ml","120ml","125ml", "150ml", "200ml", "250ml",]
-  const typeOptions = ["women", "men", "master","unisex"] // master for Box category
+  const sizeOptions = ["30ml","50ml","70ml","90ml", "75ml", "100ml","120ml","125ml", "150ml", "200ml", "250ml"]
+  const typeOptions = ["women", "men", "master","unisex"]
   const brandOptions = [
-
-  // عالمية مشهورة
-  "Chanel", "Dior", "Tom Ford", "Creed", "Hermès", "Yves Saint Laurent",
-  "Versace", "Gucci", "Prada", "Armani", "Calvin Klein", "Hugo Boss",
-  "Dolce & Gabbana", "Viktor & Rolf", "Jean Paul Gaultier", "Thierry Mugler",
-  "Maison Margiela", "Byredo", "Le Labo", "Diptyque", "Jo Malone",
-  "Lancôme", "Givenchy", "Bvlgari", "Cartier", "Burberry", "Salvatore Ferragamo",
-  "Montblanc", "Carolina Herrera", "Valentino", "Marc Jacobs", "Kenzo",
-  "Issey Miyake", "Paco Rabanne", "Balenciaga", "Azzaro", "Narciso Rodriguez",
-  "Zara", "Abercrombie & Fitch", "Victoria's Secret", "Bath & Body Works","Rabanne" ,"Gissah","Roberto Cavalli ","Nishane",
-  
-  // نيش niche brands
-  "Amouage", "Parfums de Marly", "Initio", "Kilian", "Clive Christian",
-  "Xerjoff", "Roja Parfums", "Tiziana Terenzi", "Mancera", "Montale",
-  "Maison Francis Kurkdjian", "Ormonde Jayne", "Penhaligon's","Armaf",
-  "Acqua di Parma", "Guerlain", "Etat Libre d’Orange", "Frederic Malle","Kayali Fragrances","Giorgio Armani","Nasomatto",
-  
-  // عربية وخليجية
-  "Arabian Oud", "Ajmal", "Rasasi", "Al Haramain", "Swiss Arabian",
-  "Nabeel", "Khaltat", "Ard Al Zaafaran", "Lattafa", "Asgharali",
-  "Shaikh Perfumes", "Oud Elite", "Khaleejiyah", "Makkaj","de Marly",
-  
-  // خيار عام
-  "Other"
-];
-
-  
+    "Chanel", "Dior", "Tom Ford", "Creed", "Hermès", "Yves Saint Laurent",
+    "Versace", "Gucci", "Prada", "Armani", "Calvin Klein", "Hugo Boss",
+    "Dolce & Gabbana", "Viktor & Rolf", "Jean Paul Gaultier", "Thierry Mugler",
+    "Maison Margiela", "Byredo", "Le Labo", "Diptyque", "Jo Malone",
+    "Lancôme", "Givenchy", "Bvlgari", "Cartier", "Burberry", "Salvatore Ferragamo",
+    "Montblanc", "Carolina Herrera", "Valentino", "Marc Jacobs", "Kenzo",
+    "Issey Miyake", "Paco Rabanne", "Balenciaga", "Azzaro", "Narciso Rodriguez",
+    "Zara", "Abercrombie & Fitch", "Victoria's Secret", "Bath & Body Works","Rabanne" ,"Gissah","Roberto Cavalli ","Nishane",
+    "Amouage", "Parfums de Marly", "Initio", "Kilian", "Clive Christian",
+    "Xerjoff", "Roja Parfums", "Tiziana Terenzi", "Mancera", "Montale",
+    "Maison Francis Kurkdjian", "Ormonde Jayne", "Penhaligon's","Armaf",
+    "Acqua di Parma", "Guerlain", "Etat Libre d'Orange", "Frederic Malle","Kayali Fragrances","Giorgio Armani","Nasomatto",
+    "Arabian Oud", "Ajmal", "Rasasi", "Al Haramain", "Swiss Arabian",
+    "Nabeel", "Khaltat", "Ard Al Zaafaran", "Lattafa", "Asgharali",
+    "Shaikh Perfumes", "Oud Elite", "Khaleejiyah", "Makkaj","de Marly",
+    "Other"
+  ]
 
   const handleCheckboxChange = (value, state, setState) => {
     if (state.includes(value)) {
@@ -82,7 +73,6 @@ export default function AddFragranceProduct() {
     }
   }
 
-  // Image resize function
   const resizeImage = (file, targetWidth = 768, targetHeight = 950) => {
     return new Promise((resolve) => {
       const img = new Image()
@@ -234,6 +224,10 @@ export default function AddFragranceProduct() {
         pictures: pictureUrls,
         sizes,
         type,
+        // ✅ إرسال NULL إذا كانت فارغة
+        top_notes: topNotes.trim() || null,
+        heart_notes: heartNotes.trim() || null,
+        base_notes: baseNotes.trim() || null,
         owner_id: "admin"
       }
 
@@ -245,7 +239,6 @@ export default function AddFragranceProduct() {
         body: JSON.stringify(product),
       })
 
-      // Check if response is JSON
       const contentType = res.headers.get('content-type')
       if (!contentType || !contentType.includes('application/json')) {
         const text = await res.text()
@@ -256,10 +249,8 @@ export default function AddFragranceProduct() {
       const result = await res.json()
 
       if (res.ok) {
-        // Clean URLs from memory
         previewUrls.forEach(url => URL.revokeObjectURL(url))
         
-        // Reset form
         setName("")
         setPrice("")
         setNewprice("")
@@ -268,15 +259,17 @@ export default function AddFragranceProduct() {
         setPreviewUrls([])
         setSizes([])
         setType("")
+        // ✅ إفراغ Notes
+        setTopNotes("")
+        setHeartNotes("")
+        setBaseNotes("")
         
         const fileInput = document.querySelector('input[type="file"]')
         if (fileInput) fileInput.value = ''
         
         setMessage(`✅ تم حفظ "${name}" في قاعدة البيانات بنجاح!
 
-🔒 هام: المنتج محفوظ في قاعدة البيانات لكن لن يظهر للزوار حتى تضغط "تحديث الموقع" من الداشبورد.
-
-💡 هذا يتيح لك إضافة عدة منتجات ثم نشرها جميعاً مرة واحدة.`)
+🔒 هام: المنتج محفوظ في قاعدة البيانات لكن لن يظهر للزوار حتى تضغط "تحديث الموقع" من الداشبورد.`)
         
         setTimeout(() => setMessage(""), 15000)
         
@@ -324,7 +317,6 @@ export default function AddFragranceProduct() {
           <li>• العطر سيُحفظ في قاعدة البيانات</li>
           <li>• <strong>لن يظهر للزوار</strong> حتى تضغط "تحديث الموقع"</li>
           <li>• يمكنك إضافة عدة منتجات ثم نشرها جميعاً مرة واحدة</li>
-          <li>• هذا يتيح لك التحكم الكامل في وقت النشر</li>
         </ul>
       </motion.div>
 
@@ -423,6 +415,58 @@ export default function AddFragranceProduct() {
         </div>
       </motion.div>
 
+      {/* ✅ Fragrance Notes Section */}
+      <motion.div variants={inputVariants} className="border-t pt-4 mt-4">
+        <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+          <span>🌸</span>
+          Fragrance Profile (اختياري)
+        </h3>
+        
+        <div className="space-y-3">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Top Notes (المقدمة)
+            </label>
+            <input
+              type="text"
+              value={topNotes}
+              onChange={(e) => setTopNotes(e.target.value)}
+              placeholder="مثال: Fresh & Citrusy (اختياري)"
+              className="w-full p-3 border rounded-md focus:ring-2 focus:ring-red-500 focus:border-transparent"
+            />
+            <p className="text-xs text-gray-500 mt-1">اترك فارغاً لعرض القيمة الافتراضية</p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Heart Notes (القلب)
+            </label>
+            <input
+              type="text"
+              value={heartNotes}
+              onChange={(e) => setHeartNotes(e.target.value)}
+              placeholder="مثال: Floral & Elegant (اختياري)"
+              className="w-full p-3 border rounded-md focus:ring-2 focus:ring-red-500 focus:border-transparent"
+            />
+            <p className="text-xs text-gray-500 mt-1">اترك فارغاً لعرض القيمة الافتراضية</p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Base Notes (القاعدة)
+            </label>
+            <input
+              type="text"
+              value={baseNotes}
+              onChange={(e) => setBaseNotes(e.target.value)}
+              placeholder="مثال: Warm & Lasting (اختياري)"
+              className="w-full p-3 border rounded-md focus:ring-2 focus:ring-red-500 focus:border-transparent"
+            />
+            <p className="text-xs text-gray-500 mt-1">اترك فارغاً لعرض القيمة الافتراضية</p>
+          </div>
+        </div>
+      </motion.div>
+
       {/* Images Upload */}
       <motion.div variants={inputVariants}>
         <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-red-400 transition-colors">
@@ -455,9 +499,7 @@ export default function AddFragranceProduct() {
             )}
           </label>
           <p className="text-sm text-gray-500 mt-2">
-            اختر عدة صور (أقصى حد 5 ميجا لكل صورة)<br />
-            سيتم تغيير حجم الصور تلقائياً إلى 768x950 بكسل<br />
-            يمكنك إضافة المزيد من الصور بالاختيار مرة أخرى
+            اختر عدة صور (أقصى حد 5 ميجا لكل صورة)
           </p>
         </div>
       </motion.div>
@@ -529,7 +571,7 @@ export default function AddFragranceProduct() {
         className={`mt-4 py-4 px-6 rounded-lg font-semibold text-lg transition-all ${
           loading || uploadingImages
             ? "bg-gray-400 text-gray-200 cursor-not-allowed"
-            : "bg text-white shadow-lg hover:shadow-xl"
+            : "bg-red-600 text-white shadow-lg hover:shadow-xl hover:bg-red-700"
         }`}
         variants={inputVariants}
         whileHover={!loading && !uploadingImages ? { scale: 1.02, y: -2 } : {}}
@@ -561,20 +603,6 @@ export default function AddFragranceProduct() {
           </motion.span>
         </AnimatePresence>
       </motion.button>
-
-      {/* Bottom Warning */}
-      <motion.div 
-        className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-800"
-        variants={inputVariants}
-      >
-        <div className="flex items-start gap-2">
-          <span className="text-lg">⚠️</span>
-          <div>
-            <div className="font-medium mb-1">تذكر:</div>
-            <div>العطر سيُحفظ في قاعدة البيانات لكن <strong>لن يظهر للزوار</strong> حتى تضغط "تحديث الموقع" في الداشبورد.</div>
-          </div>
-        </div>
-      </motion.div>
     </motion.form>
   )
 }

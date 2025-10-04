@@ -38,7 +38,7 @@ export default function LoginPage() {
   return (
     <form
       onSubmit={handleLogin}
-      className="p-6 max-w-sm mx-auto bg-white rounded shadow"
+      className="p-6 max-w-sm mx-auto bg-white rounded shadow mt-44"
     >
       <h2 className="text-xl font-bold mb-4">Admin Login</h2>
       <input
@@ -60,7 +60,7 @@ export default function LoginPage() {
       <button
         type="submit"
         disabled={loading}
-        className="w-full py-2 bg-purple-600 text-white rounded"
+        className="w-full py-2 bg-red-600 text-white rounded"
       >
         {loading ? "Logging in..." : "Login"}
       </button>

@@ -43,7 +43,10 @@ export async function POST(request) {
       brand: body.brand || 'Other',
       pictures: body.pictures || [],
       sizes: body.sizes || [],
-      owner_id: body.owner_id || 'admin'
+      owner_id: body.owner_id || 'admin',
+        top_notes: body.top_notes || null,
+        heart_notes: body.heart_notes || null,
+        base_notes: body.base_notes || null
     }
     
     if (body.newprice && !isNaN(parseFloat(body.newprice))) {
