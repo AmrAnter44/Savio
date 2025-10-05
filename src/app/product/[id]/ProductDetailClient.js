@@ -20,7 +20,6 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
     }
   }, [product])
 
-
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -40,8 +39,23 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
       transition: { duration: 0.5 }
     }
   }
-console.log(product);
+
+  // ✅ تحديد ما إذا كان المنتج out of stock
+  const isOutOfStock = product?.in_stock === false
+
   const handleAddToCart = () => {
+    // ✅ منع الإضافة إذا كان out of stock
+    if (isOutOfStock) {
+      toast.error("This product is currently out of stock!", {
+        duration: 3000,
+        style: {
+          background: '#EF4444',
+          color: 'white',
+        }
+      })
+      return
+    }
+
     if (!selectedSize) {
       toast.error("Please select a size first!", {
         duration: 3000,
@@ -70,7 +84,6 @@ console.log(product);
       toast.error("Failed to add to cart. Please try again.")
     }
   }
-
 
   if (!product) {
     return (
@@ -118,7 +131,6 @@ console.log(product);
             className="flex flex-col-reverse lg:w-1/2"
             variants={itemVariants}
           >
-            {/* Thumbnails */}
             {product.pictures?.length > 1 && (
               <motion.div 
                 className="flex gap-3 mt-4 overflow-x-auto pb-2"
@@ -150,7 +162,7 @@ console.log(product);
             <AnimatePresence mode="wait">
               <motion.div 
                 key={selectedImage}
-                className="rounded-xl overflow-hidden bg-gray-50"
+                className="rounded-xl overflow-hidden bg-gray-50 relative"
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
@@ -165,6 +177,15 @@ console.log(product);
                   className="w-full object-cover"
                   priority
                 />
+                
+                {/* ✅ Out of Stock Overlay على الصورة */}
+                {isOutOfStock && (
+                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                    <div className="bg-red-600 text-white px-8 py-4 rounded-lg font-bold text-2xl shadow-2xl">
+                      Out of Stock
+                    </div>
+                  </div>
+                )}
               </motion.div>
             </AnimatePresence>
           </motion.div>
@@ -177,7 +198,14 @@ console.log(product);
             <motion.div variants={itemVariants}>
               <h1 className="text-3xl font-bold text-gray-900 mb-3">{product.name}</h1>
               
-              {/* Brand */}
+              {/* ✅ Out of Stock Badge في الأعلى */}
+              {isOutOfStock && (
+                <div className="mb-4 inline-flex items-center gap-2 bg-red-100 text-red-700 px-4 py-2 rounded-full">
+                  <span className="text-lg">❌</span>
+                  <span className="font-semibold">Currently Unavailable</span>
+                </div>
+              )}
+              
               {(product.brand || product.description) && (
                 <div className="mb-4">
                   <span className="text-sm font-medium text-gray-500 uppercase tracking-wide">Brand</span>
@@ -185,7 +213,6 @@ console.log(product);
                 </div>
               )}
 
-              {/* Category */}
               {product.type && (
                 <div className="mb-4">
                   <span className="text-sm font-medium text-gray-500 uppercase tracking-wide">Category</span>
@@ -201,7 +228,7 @@ console.log(product);
               className="flex items-center gap-4"
               variants={itemVariants}
             >
-              {product.newprice ? (
+              {product.newprice && !isOutOfStock ? (
                 <>
                   <span className="text-3xl font-bold text-gray-900">
                     {product.newprice} LE
@@ -214,7 +241,7 @@ console.log(product);
                   </span>
                 </>
               ) : (
-                <span className="text-3xl font-bold text-gray-900">
+                <span className={`text-3xl font-bold ${isOutOfStock ? 'text-gray-500' : 'text-gray-900'}`}>
                   {product.price} LE
                 </span>
               )}
@@ -232,14 +259,17 @@ console.log(product);
                     return (
                       <motion.button
                         key={size}
-                        onClick={() => setSelectedSize(size)}
+                        onClick={() => !isOutOfStock && setSelectedSize(size)}
+                        disabled={isOutOfStock}
                         className={`px-4 py-3 rounded-lg border-2 font-semibold transition-all ${
-                          isSelected 
+                          isOutOfStock
+                            ? "border-gray-300 bg-gray-100 text-gray-400 cursor-not-allowed"
+                            : isSelected 
                             ? "border-gray-800 bg-gray-800 text-white" 
                             : "border-gray-300 bg-white text-gray-900 hover:border-gray-400"
                         }`}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
+                        whileHover={!isOutOfStock ? { scale: 1.05 } : {}}
+                        whileTap={!isOutOfStock ? { scale: 0.95 } : {}}
                       >
                         {size}
                       </motion.button>
@@ -253,17 +283,30 @@ console.log(product);
             <motion.div className="space-y-4" variants={itemVariants}>
               <motion.button
                 onClick={handleAddToCart}
+                disabled={isOutOfStock || added}
                 className={`w-full py-4 px-6 rounded-xl font-semibold text-lg transition-all duration-300 ${
-                  added
+                  isOutOfStock
+                    ? "bg-gray-400 text-gray-200 cursor-not-allowed"
+                    : added
                     ? "bg-green-600 text-white"
                     : "bg-gray-900 text-white hover:bg-gray-800"
                 }`}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                disabled={added}
+                whileHover={!isOutOfStock && !added ? { scale: 1.02 } : {}}
+                whileTap={!isOutOfStock && !added ? { scale: 0.98 } : {}}
               >
                 <AnimatePresence mode="wait">
-                  {added ? (
+                  {isOutOfStock ? (
+                    <motion.div
+                      key="outofstock"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="flex items-center justify-center gap-2"
+                    >
+                      <span>❌</span>
+                      <span>Out of Stock</span>
+                    </motion.div>
+                  ) : added ? (
                     <motion.div
                       key="added"
                       initial={{ opacity: 0, y: 10 }}
@@ -288,6 +331,22 @@ console.log(product);
                 </AnimatePresence>
               </motion.button>
 
+              {/* ✅ Out of Stock Notice */}
+              {isOutOfStock && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-red-50 border border-red-200 rounded-lg p-4 text-center"
+                >
+                  <p className="text-red-700 font-medium">
+                    This product is temporarily unavailable
+                  </p>
+                  <p className="text-red-600 text-sm mt-1">
+                    Check back soon or contact us for availability
+                  </p>
+                </motion.div>
+              )}
+
               {/* Additional Information */}
               <motion.div 
                 className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-gray-200"
@@ -307,7 +366,7 @@ console.log(product);
                 </div>
               </motion.div>
 
-              {/* ✅ Fragrance Notes - يتم عرضها من السيرفر */}
+              {/* Fragrance Notes */}
               <motion.div 
                 className="bg-gray-50 rounded-lg p-4 mt-6"
                 variants={itemVariants}
@@ -354,9 +413,6 @@ console.log(product);
   )
 }
 
-/**
- * ✅ Static Related Products Component for SSG
- */
 function RelatedProductsSSG({ products, currentProduct }) {
   if (!products || products.length === 0) return null
 

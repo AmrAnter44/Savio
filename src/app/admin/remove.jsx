@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabaseClient";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 
-// Animation variants (نفس الكود السابق)
+// Animation variants
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -78,10 +78,12 @@ export default function ManageFragrances() {
   const [editPictures, setEditPictures] = useState([]);
   const [uploadingImages, setUploadingImages] = useState(false);
   
-  // ✅ حقول Notes للتعديل
   const [editTopNotes, setEditTopNotes] = useState("");
   const [editHeartNotes, setEditHeartNotes] = useState("");
   const [editBaseNotes, setEditBaseNotes] = useState("");
+  
+  // ✅ إضافة حالة المخزون للتعديل
+  const [editInStock, setEditInStock] = useState(true);
 
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [productToDelete, setProductToDelete] = useState(null);
@@ -193,6 +195,9 @@ export default function ManageFragrances() {
   };
 
   const openEditModal = (prod) => {
+    console.log('🔍 Opening edit for product:', prod.name);
+    console.log('🔍 Original in_stock value:', prod.in_stock, typeof prod.in_stock);
+    
     setEditingProduct(prod);
     setEditName(prod.name);
     setEditPrice(prod.price);
@@ -201,11 +206,14 @@ export default function ManageFragrances() {
     setEditSizes(prod.sizes || []);
     setEditType(prod.type || "");
     setEditPictures(prod.pictures || []);
-    
-    // ✅ تحميل Notes الموجودة أو القيم الافتراضية
     setEditTopNotes(prod.top_notes || "Fresh & Citrusy");
     setEditHeartNotes(prod.heart_notes || "Floral & Elegant");
     setEditBaseNotes(prod.base_notes || "Warm & Lasting");
+    // ✅ تحميل حالة المخزون (افتراضياً متاح إذا غير موجود)
+    const stockStatus = prod.in_stock !== false;
+    setEditInStock(stockStatus);
+    
+    console.log('🔍 Set editInStock to:', stockStatus, typeof stockStatus);
   };
 
   const toggleSize = (size) => {
@@ -372,30 +380,40 @@ export default function ManageFragrances() {
 
     try {
       const productId = editingProduct.uuid || editingProduct.id;
+      
+      const updateData = {
+        name: editName.trim(),
+        price: Number(editPrice),
+        newprice: editNewPrice ? Number(editNewPrice) : null,
+        brand: editBrand,
+        sizes: editSizes,
+        type: editType,
+        pictures: editPictures,
+        top_notes: editTopNotes.trim() || null,
+        heart_notes: editHeartNotes.trim() || null,
+        base_notes: editBaseNotes.trim() || null,
+        in_stock: editInStock, // ✅ إرسال حالة المخزون
+      };
+      
+      // ✅ DEBUG: طباعة البيانات المرسلة
+      console.log('📦 Sending update data:', updateData);
+      console.log('📦 Stock status:', editInStock, typeof editInStock);
+      
       const res = await fetch(`/api/products/${productId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          name: editName.trim(),
-          price: Number(editPrice),
-          newprice: editNewPrice ? Number(editNewPrice) : null,
-          brand: editBrand,
-          sizes: editSizes,
-          type: editType,
-          pictures: editPictures,
-          // ✅ إرسال NULL إذا كانت فارغة
-          top_notes: editTopNotes.trim() || null,
-          heart_notes: editHeartNotes.trim() || null,
-          base_notes: editBaseNotes.trim() || null
-        }),
+        body: JSON.stringify(updateData),
       });
 
       if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.error || "Failed to update fragrance");
       }
+      
+      const result = await res.json();
+      console.log('✅ Update result:', result);
 
       try {
         await fetch('/api/revalidate', {
@@ -447,7 +465,6 @@ export default function ManageFragrances() {
         Manage Fragrances
       </motion.h1>
 
-      {/* Search Bar */}
       <motion.div 
         className="mb-6 max-w-md mx-auto"
         initial={{ opacity: 0, y: -20 }}
@@ -485,7 +502,6 @@ export default function ManageFragrances() {
         </div>
       </motion.div>
 
-      {/* Messages */}
       <AnimatePresence>
         {message && (
           <motion.p 
@@ -503,7 +519,6 @@ export default function ManageFragrances() {
         )}
       </AnimatePresence>
 
-      {/* Loading State */}
       {loading ? (
         <motion.div 
           className="flex flex-col items-center justify-center py-20"
@@ -536,57 +551,69 @@ export default function ManageFragrances() {
           variants={containerVariants}
           key={searchTerm}
         >
-          {filteredProducts.map((prod, index) => (
-            <motion.div
-              key={prod.uuid || prod.id}
-              className="border rounded-xl p-4 relative flex flex-col items-center shadow hover:shadow-lg transition"
-              variants={cardVariants}
-              whileHover="hover"
-              custom={index}
-              layout
-            >
-              <motion.div className="lg:w-full h-72 lg:h-58 mb-3">
-                <Image
-                  src={prod.pictures?.[0] || "/placeholder.png"}
-                  alt={prod.name}
-                  width={400}
-                  height={550}
-                  className="rounded object-cover w-full h-full"
-                />
+          {filteredProducts.map((prod, index) => {
+            // ✅ تحديد ما إذا كان المنتج out of stock
+            const isOutOfStock = prod.in_stock === false
+            
+            return (
+              <motion.div
+                key={prod.uuid || prod.id}
+                className={`border rounded-xl p-4 relative flex flex-col items-center shadow hover:shadow-lg transition ${isOutOfStock ? 'opacity-75' : ''}`}
+                variants={cardVariants}
+                whileHover="hover"
+                custom={index}
+                layout
+              >
+                {/* ✅ Out of Stock Badge */}
+                {isOutOfStock && (
+                  <div className="absolute top-2 right-2 bg-red-600 text-white px-2 py-1 rounded-full text-xs font-bold z-10">
+                    Out of Stock
+                  </div>
+                )}
+
+                <motion.div className="lg:w-full h-72 lg:h-58 mb-3">
+                  <Image
+                    src={prod.pictures?.[0] || "/placeholder.png"}
+                    alt={prod.name}
+                    width={400}
+                    height={550}
+                    className="rounded object-cover w-full h-full"
+                  />
+                </motion.div>
+
+                <h2 className="font-semibold text-lg text-center mb-2">{prod.name}</h2>
+
+                <div className="text-center mb-2">
+                  {prod.brand && <p className="text-gray-500 text-sm font-medium">{prod.brand}</p>}
+                  <p className="text-gray-700 font-medium">{prod.price} LE</p>
+                  {prod.newprice && <p className="text-red-500 font-medium">Sale: {prod.newprice} LE</p>}
+                </div>
+
+                <div className="flex gap-2">
+                  <motion.button
+                    onClick={() => openEditModal(prod)}
+                    className="px-3 py-1 bg-red-900 text-white rounded transition hover:bg-red-700"
+                    variants={buttonVariants}
+                    initial="idle"
+                    whileHover="hover"
+                    whileTap="tap"
+                  >
+                    Edit
+                  </motion.button>
+                  <motion.button
+                    onClick={() => showDeleteConfirmation(prod)}
+                    className="px-3 py-1 bg-gray-900 text-white rounded hover:bg-gray-700 transition"
+                    variants={buttonVariants}
+                    initial="idle"
+                    whileHover="hover"
+                    whileTap="tap"
+                  >
+                    Delete
+                  </motion.button>
+                </div>
               </motion.div>
-
-              <h2 className="font-semibold text-lg text-center mb-2">{prod.name}</h2>
-
-              <div className="text-center mb-2">
-                {prod.brand && <p className="text-gray-500 text-sm font-medium">{prod.brand}</p>}
-                <p className="text-gray-700 font-medium">{prod.price} LE</p>
-                {prod.newprice && <p className="text-red-500 font-medium">Sale: {prod.newprice} LE</p>}
-              </div>
-
-              <div className="flex gap-2">
-                <motion.button
-                  onClick={() => openEditModal(prod)}
-                  className="px-3 py-1 bg-red-900 text-white rounded transition hover:bg-red-700"
-                  variants={buttonVariants}
-                  initial="idle"
-                  whileHover="hover"
-                  whileTap="tap"
-                >
-                  Edit
-                </motion.button>
-                <motion.button
-                  onClick={() => showDeleteConfirmation(prod)}
-                  className="px-3 py-1 bg-gray-900 text-white rounded hover:bg-gray-700 transition"
-                  variants={buttonVariants}
-                  initial="idle"
-                  whileHover="hover"
-                  whileTap="tap"
-                >
-                  Delete
-                </motion.button>
-              </div>
-            </motion.div>
-          ))}
+            )
+          })}
         </motion.div>
       )}
 
@@ -691,7 +718,6 @@ export default function ManageFragrances() {
                 className="w-full mb-3 p-3 border rounded-lg focus:outline-none focus:border-red-900"
               />
 
-              {/* Brand */}
               <div className="mb-4">
                 <select 
                   value={editBrand} 
@@ -708,7 +734,6 @@ export default function ManageFragrances() {
                 </select>
               </div>
 
-              {/* Category */}
               <div className="mb-4">
                 <h3 className="text-sm font-semibold mb-2">Category *:</h3>
                 <div className="flex flex-wrap gap-2">
@@ -729,7 +754,6 @@ export default function ManageFragrances() {
                 </div>
               </div>
 
-              {/* Sizes */}
               <div className="mb-4">
                 <h3 className="text-sm font-semibold mb-2">Sizes *:</h3>
                 <div className="flex flex-wrap gap-2">
@@ -750,7 +774,41 @@ export default function ManageFragrances() {
                 </div>
               </div>
 
-              {/* ✅ Fragrance Notes في Edit Modal */}
+              {/* ✅ Stock Status Toggle في Edit Modal */}
+              <div className="mb-4 border-t pt-4">
+                <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                  <span>📦</span>
+                  Stock Status (حالة المخزون)
+                </h3>
+                
+                <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
+                  <button
+                    type="button"
+                    onClick={() => setEditInStock(!editInStock)}
+                    className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 ${
+                      editInStock ? 'bg-green-600' : 'bg-red-600'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform duration-300 ${
+                        editInStock ? 'translate-x-7' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                  
+                  <div className="flex-1">
+                    <p className={`font-semibold ${editInStock ? 'text-green-700' : 'text-red-700'}`}>
+                      {editInStock ? '✅ In Stock (متوفر)' : '❌ Out of Stock (غير متوفر)'}
+                    </p>
+                    <p className="text-xs text-gray-600 mt-1">
+                      {editInStock 
+                        ? 'المنتج متاح للشراء' 
+                        : 'المنتج سيظهر في الموقع لكن بدون إمكانية الشراء'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               <div className="mb-4 border-t pt-4">
                 <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
                   <span>🌸</span>
@@ -802,7 +860,6 @@ export default function ManageFragrances() {
                 </div>
               </div>
 
-              {/* Images */}
               <div className="mb-6">
                 <h3 className="text-sm font-semibold mb-3">Images:</h3>
                 
@@ -849,7 +906,6 @@ export default function ManageFragrances() {
                 </div>
               </div>
 
-              {/* Modal Actions */}
               <div className="flex justify-end gap-3">
                 <button
                   onClick={closeEditModal}

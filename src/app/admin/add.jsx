@@ -4,7 +4,6 @@ import { useState } from "react"
 import { supabase } from "@/lib/supabaseClient"
 import { motion, AnimatePresence } from "framer-motion"
 
-// Animation variants (same as original)
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -39,10 +38,12 @@ export default function AddFragranceProduct() {
   const [newprice, setNewprice] = useState("")
   const [uploadingImages, setUploadingImages] = useState(false)
   
-  // ✅ حقول Notes الجديدة (فارغة - اختيارية)
   const [topNotes, setTopNotes] = useState("")
   const [heartNotes, setHeartNotes] = useState("")
   const [baseNotes, setBaseNotes] = useState("")
+  
+  // ✅ إضافة حالة المخزون (افتراضياً متاح)
+  const [inStock, setInStock] = useState(true)
 
   const sizeOptions = ["30ml","50ml","70ml","90ml", "75ml", "100ml","120ml","125ml", "150ml", "200ml", "250ml"]
   const typeOptions = ["women", "men", "master","unisex"]
@@ -224,10 +225,10 @@ export default function AddFragranceProduct() {
         pictures: pictureUrls,
         sizes,
         type,
-        // ✅ إرسال NULL إذا كانت فارغة
         top_notes: topNotes.trim() || null,
         heart_notes: heartNotes.trim() || null,
         base_notes: baseNotes.trim() || null,
+        in_stock: inStock, // ✅ إضافة حالة المخزون
         owner_id: "admin"
       }
 
@@ -259,10 +260,10 @@ export default function AddFragranceProduct() {
         setPreviewUrls([])
         setSizes([])
         setType("")
-        // ✅ إفراغ Notes
         setTopNotes("")
         setHeartNotes("")
         setBaseNotes("")
+        setInStock(true) // ✅ إعادة تعيين الحالة
         
         const fileInput = document.querySelector('input[type="file"]')
         if (fileInput) fileInput.value = ''
@@ -304,7 +305,6 @@ export default function AddFragranceProduct() {
         إضافة عطر جديد
       </motion.h1>
 
-      {/* Manual Update Notice */}
       <motion.div 
         className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-sm text-red-800"
         variants={inputVariants}
@@ -320,7 +320,6 @@ export default function AddFragranceProduct() {
         </ul>
       </motion.div>
 
-      {/* Fragrance Name */}
       <motion.input 
         type="text" 
         placeholder="اسم العطر *" 
@@ -331,7 +330,6 @@ export default function AddFragranceProduct() {
         variants={inputVariants}
       />
       
-      {/* Price */}
       <motion.input 
         type="number" 
         placeholder="السعر (جنيه مصري) *" 
@@ -342,7 +340,6 @@ export default function AddFragranceProduct() {
         variants={inputVariants}
       />
       
-      {/* Sale Price */}
       <motion.input 
         type="number" 
         placeholder="سعر التخفيض (اختياري)" 
@@ -352,7 +349,6 @@ export default function AddFragranceProduct() {
         variants={inputVariants}
       />
 
-      {/* Brand */}
       <motion.div variants={inputVariants}>
         <select 
           value={brand} 
@@ -369,7 +365,6 @@ export default function AddFragranceProduct() {
         </select>
       </motion.div>
 
-      {/* Type */}
       <motion.div variants={inputVariants}>
         <p className="mb-2 font-semibold text-gray-700">الفئة (مطلوب) *:</p>
         <div className="flex flex-wrap gap-2">
@@ -380,7 +375,7 @@ export default function AddFragranceProduct() {
               onClick={() => setType(t)} 
               className={`px-4 py-2 rounded-full font-medium transition-all duration-300 ${
                 type === t 
-                  ? "bg-red-600 text-white shadow-lg" 
+                  ? "bg-red-900 text-white shadow-lg" 
                   : "bg-gray-100 text-gray-700 hover:bg-red-100 hover:text-red-700"
               }`}
               whileHover={{ scale: 1.05 }}
@@ -392,7 +387,6 @@ export default function AddFragranceProduct() {
         </div>
       </motion.div>
 
-      {/* Sizes */}
       <motion.div variants={inputVariants}>
         <p className="mb-2 font-semibold text-gray-700">الأحجام (مطلوب) *:</p>
         <div className="flex flex-wrap gap-2">
@@ -403,7 +397,7 @@ export default function AddFragranceProduct() {
               onClick={() => handleCheckboxChange(size, sizes, setSizes)} 
               className={`px-4 py-2 rounded-full font-medium transition-all duration-300 ${
                 sizes.includes(size) 
-                  ? "bg-red-600 text-white shadow-lg" 
+                  ? "bg-red-900 text-white shadow-lg" 
                   : "bg-gray-100 text-gray-700 hover:bg-red-100 hover:text-red-700"
               }`}
               whileHover={{ scale: 1.05 }}
@@ -415,7 +409,41 @@ export default function AddFragranceProduct() {
         </div>
       </motion.div>
 
-      {/* ✅ Fragrance Notes Section */}
+      {/* ✅ Stock Status Section */}
+      <motion.div variants={inputVariants} className="border-t pt-4">
+        <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+          <span>📦</span>
+          Stock Status (حالة المخزون)
+        </h3>
+        
+        <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
+          <button
+            type="button"
+            onClick={() => setInStock(!inStock)}
+            className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 ${
+              inStock ? 'bg-green-600' : 'bg-red-900'
+            }`}
+          >
+            <span
+              className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform duration-300 ${
+                inStock ? 'translate-x-7' : 'translate-x-1'
+              }`}
+            />
+          </button>
+          
+          <div className="flex-1">
+            <p className={`font-semibold ${inStock ? 'text-green-700' : 'text-red-700'}`}>
+              {inStock ? '✅ In Stock (متوفر)' : '❌ Out of Stock (غير متوفر)'}
+            </p>
+            <p className="text-xs text-gray-600 mt-1">
+              {inStock 
+                ? 'المنتج متاح للشراء' 
+                : 'المنتج سيظهر في الموقع لكن بدون إمكانية الشراء'}
+            </p>
+          </div>
+        </div>
+      </motion.div>
+
       <motion.div variants={inputVariants} className="border-t pt-4 mt-4">
         <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
           <span>🌸</span>
@@ -467,7 +495,6 @@ export default function AddFragranceProduct() {
         </div>
       </motion.div>
 
-      {/* Images Upload */}
       <motion.div variants={inputVariants}>
         <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-red-400 transition-colors">
           <input
@@ -481,14 +508,14 @@ export default function AddFragranceProduct() {
           />
           <label 
             htmlFor="image-upload" 
-            className={`cursor-pointer text-red-600 hover:text-red-700 font-medium text-lg ${
+            className={`cursor-pointer text-red-800 hover:text-red-700 font-medium text-lg ${
               uploadingImages ? 'opacity-50 cursor-not-allowed' : ''
             }`}
           >
             {uploadingImages ? (
               <span className="flex items-center justify-center gap-2">
                 <motion.div
-                  className="w-5 h-5 border-2 border-red-600 border-t-transparent rounded-full"
+                  className="w-5 h-5 border-2 border-red-900 border-t-transparent rounded-full"
                   animate={{ rotate: 360 }}
                   transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                 />
@@ -504,7 +531,6 @@ export default function AddFragranceProduct() {
         </div>
       </motion.div>
       
-      {/* Image Previews */}
       <AnimatePresence>
         {previewUrls.length > 0 && (
           <motion.div 
@@ -531,7 +557,7 @@ export default function AddFragranceProduct() {
                 <motion.button
                   type="button"
                   onClick={() => removeImage(i)}
-                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold hover:bg-red-600 transition opacity-0 group-hover:opacity-100"
+                  className="absolute -top-2 -right-2 bg-red-900 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold hover:bg-red-900 transition opacity-0 group-hover:opacity-100"
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                 >
@@ -543,7 +569,6 @@ export default function AddFragranceProduct() {
         )}
       </AnimatePresence>
 
-      {/* Messages */}
       <AnimatePresence>
         {message && (
           <motion.div 
@@ -564,14 +589,13 @@ export default function AddFragranceProduct() {
         )}
       </AnimatePresence>
 
-      {/* Submit Button */}
       <motion.button 
         type="submit" 
         disabled={loading || uploadingImages} 
         className={`mt-4 py-4 px-6 rounded-lg font-semibold text-lg transition-all ${
           loading || uploadingImages
             ? "bg-gray-400 text-gray-200 cursor-not-allowed"
-            : "bg-red-600 text-white shadow-lg hover:shadow-xl hover:bg-red-700"
+            : "bg-red-900 text-white shadow-lg hover:shadow-xl hover:bg-red-700"
         }`}
         variants={inputVariants}
         whileHover={!loading && !uploadingImages ? { scale: 1.02, y: -2 } : {}}

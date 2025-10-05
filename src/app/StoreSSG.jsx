@@ -6,7 +6,6 @@ import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
 import { FaFilter, FaFilterCircleXmark, FaFire } from "react-icons/fa6"
 
-// ✅ Import optimized ProductImage component
 const ProductImage = memo(({ product, isHovered, className, priority = false, index = 0 }) => {
   const [imageSrc, setImageSrc] = useState(product.pictures?.[0] || "/placeholder.png")
   const [imageError, setImageError] = useState(false)
@@ -56,14 +55,13 @@ const ProductImage = memo(({ product, isHovered, className, priority = false, in
   )
 })
 
-// ✅ Optimized animation variants
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
     transition: { 
       duration: 0.3, 
-      staggerChildren: 0.02 // Reduced stagger for better performance
+      staggerChildren: 0.02
     }
   }
 }
@@ -79,7 +77,6 @@ const itemVariants = {
   }
 }
 
-// ✅ Memoized category card component
 const CategoryCard = memo(({ category, onClick, isActive }) => (
   <motion.div
     initial={{ opacity: 0, scale: 0.95 }}
@@ -112,13 +109,15 @@ const CategoryCard = memo(({ category, onClick, isActive }) => (
   </motion.div>
 ))
 
-// ✅ Memoized product card component
 const ProductCard = memo(({ product, index, hoveredId, setHoveredId }) => {
   const isHovered = hoveredId === product.id
   
   const getDiscountPercentage = useCallback((originalPrice, salePrice) => {
     return Math.round(((originalPrice - salePrice) / originalPrice) * 100)
   }, [])
+
+  // ✅ تحديد ما إذا كان المنتج out of stock
+  const isOutOfStock = product.in_stock === false
 
   return (
     <motion.div
@@ -130,7 +129,7 @@ const ProductCard = memo(({ product, index, hoveredId, setHoveredId }) => {
       className="group"
     >
       <Link href={`/product/${product.id}`} className="block">
-        <div className="group bg-white rounded-xl overflow-hidden  hover:shadow-lg transition-all duration-300 cursor-pointer">
+        <div className={`group bg-white rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer ${isOutOfStock ? 'opacity-75' : ''}`}>
           <div className="relative overflow-hidden h-60 md:h-72 lg:h-96 bg-gray-50">
             <ProductImage
               product={product}
@@ -140,13 +139,22 @@ const ProductCard = memo(({ product, index, hoveredId, setHoveredId }) => {
               index={index}
             />
 
-            {product.newprice && (
+            {/* ✅ Out of Stock Badge - يظهر فوق كل شيء */}
+            {isOutOfStock && (
+              <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-20">
+                <div className="bg-red-600 text-white px-6 py-3 rounded-lg font-bold text-lg shadow-lg">
+                  Out of Stock
+                </div>
+              </div>
+            )}
+
+            {product.newprice && !isOutOfStock && (
               <div className="absolute top-3 left-3 bg-red-900 text-white px-3 py-1 rounded-full text-xs font-bold z-10 flex items-center gap-1">
                 {getDiscountPercentage(product.price, product.newprice)}% OFF
               </div>
             )}
 
-            {product.sizes?.length > 0 && (
+            {product.sizes?.length > 0 && !isOutOfStock && (
               <div className="absolute bottom-3 right-3 bg-black/70 text-white px-2 py-1 rounded text-xs">
                 {product.sizes[0]}
               </div>
@@ -165,7 +173,7 @@ const ProductCard = memo(({ product, index, hoveredId, setHoveredId }) => {
             )}
             
             <div className="flex items-center justify-between mb-4">
-              {product.newprice ? (
+              {product.newprice && !isOutOfStock ? (
                 <div className="flex items-center gap-2">
                   <span className="text-lg font-semibold text-gray-900">
                     {product.newprice} LE
@@ -175,11 +183,20 @@ const ProductCard = memo(({ product, index, hoveredId, setHoveredId }) => {
                   </span>
                 </div>
               ) : (
-                <span className="text-lg font-semibold text-gray-900">
+                <span className={`text-lg font-semibold ${isOutOfStock ? 'text-gray-500' : 'text-gray-900'}`}>
                   {product.price} LE
                 </span>
               )}
             </div>
+            
+            {/* ✅ Out of Stock Text */}
+            {isOutOfStock && (
+              <div className="mt-2 text-center">
+                <span className="text-red-600 font-semibold text-sm">
+                  غير متوفر حالياً
+                </span>
+              </div>
+            )}
           </div>
         </div>
       </Link>
@@ -187,25 +204,21 @@ const ProductCard = memo(({ product, index, hoveredId, setHoveredId }) => {
   )
 })
 
-// ✅ Optimized virtual scrolling for large product lists
 const VirtualProductGrid = memo(({ products, hoveredId, setHoveredId }) => {
   const [visibleProducts, setVisibleProducts] = useState([])
   const [loadedCount, setLoadedCount] = useState(12)
   const [isLoading, setIsLoading] = useState(false)
 
-  // ✅ Load products in chunks to prevent main thread blocking
   useEffect(() => {
     const loadProducts = async () => {
       setIsLoading(true)
       
-      // Use requestIdleCallback for better performance
       if (window.requestIdleCallback) {
         window.requestIdleCallback(() => {
           setVisibleProducts(products.slice(0, loadedCount))
           setIsLoading(false)
         })
       } else {
-        // Fallback for browsers without requestIdleCallback
         setTimeout(() => {
           setVisibleProducts(products.slice(0, loadedCount))
           setIsLoading(false)
@@ -222,7 +235,6 @@ const VirtualProductGrid = memo(({ products, hoveredId, setHoveredId }) => {
     }
   }, [isLoading, loadedCount, products.length])
 
-  // ✅ Intersection Observer for infinite scroll
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -258,19 +270,16 @@ const VirtualProductGrid = memo(({ products, hoveredId, setHoveredId }) => {
         ))}
       </motion.div>
 
-      {/* Loading indicator */}
       {isLoading && (
         <div className="flex justify-center items-center py-8">
           <div className="w-8 h-8 border-4 border-gray-300 border-t-red-900 rounded-full animate-spin"></div>
         </div>
       )}
 
-      {/* Scroll sentinel for infinite loading */}
       {loadedCount < products.length && (
         <div id="scroll-sentinel" className="h-10"></div>
       )}
 
-      {/* Load more button fallback */}
       {!isLoading && loadedCount < products.length && (
         <div className="text-center mt-8">
           <button
@@ -285,9 +294,6 @@ const VirtualProductGrid = memo(({ products, hoveredId, setHoveredId }) => {
   )
 })
 
-/**
- * ✅ OPTIMIZED: Store component with performance enhancements
- */
 export default function StoreSSG({ 
   initialProducts = [], 
   initialSaleProducts = [], 
@@ -305,14 +311,13 @@ export default function StoreSSG({
 
   console.log(`🏪 StoreSSG rendered with ${initialProducts.length} products (STATIC DATA ONLY)`)
 
-  // ✅ Memoized brands calculation
   const getAllBrands = useCallback(() => {
     return [...new Set(initialProducts.map(p => p.description).filter(Boolean))]
   }, [initialProducts])
 
   const brands = useMemo(() => getAllBrands(), [getAllBrands])
 
-  // ✅ Optimized filtering with useMemo and reduced re-calculations
+  // ✅ فلترة مع ترتيب Out of Stock في الأسفل
   const filteredProducts = useMemo(() => {
     let filtered = initialProducts.filter((product) => {
       let typeMatch = true
@@ -334,15 +339,23 @@ export default function StoreSSG({
         (!sizeFilter || product.sizes?.includes(sizeFilter)) &&
         (!minPrice || product.price >= parseFloat(minPrice)) &&
         (!maxPrice || product.price <= parseFloat(maxPrice)) &&
-(!searchTerm || 
-  product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  product.description?.toLowerCase().includes(searchTerm.toLowerCase())
-)
+        (!searchTerm || 
+          product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          product.description?.toLowerCase().includes(searchTerm.toLowerCase())
+        )
       )
     })
 
-    // ✅ Optimized sorting
-    return filtered.sort((a, b) => {
+    // ✅ ترتيب: In Stock أولاً، ثم Out of Stock في الأسفل
+    filtered = filtered.sort((a, b) => {
+      const aInStock = a.in_stock !== false
+      const bInStock = b.in_stock !== false
+      
+      // ضع Out of Stock في الأسفل
+      if (aInStock && !bInStock) return -1
+      if (!aInStock && bInStock) return 1
+      
+      // إذا كانا من نفس النوع، رتب حسب sortBy
       switch (sortBy) {
         case "price-low":
           return (a.newprice || a.price) - (b.newprice || b.price)
@@ -354,9 +367,10 @@ export default function StoreSSG({
           return b.id - a.id
       }
     })
+
+    return filtered
   }, [initialProducts, typeFilter, brandFilter, sizeFilter, minPrice, maxPrice, searchTerm, sortBy])
 
-  // ✅ Memoized handlers
   const clearAllFilters = useCallback(() => {
     setTypeFilter("")
     setBrandFilter("")
@@ -382,7 +396,6 @@ export default function StoreSSG({
       className="min-h-screen"
     >
       <div className="max-w-7xl mx-auto px-4 py-8 mt-20">
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -391,7 +404,6 @@ export default function StoreSSG({
           <h1 className="text-5xl font-bold mb-4 text-gray-900">Our Fragrance Collection</h1>
           <p className="text-xl mb-8 text-gray-600">Discover premium perfumes and captivating scents</p>
           
-          {/* Optimized Search Bar */}
           <div className="max-w-md mx-auto relative">
             <svg 
               className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" 
@@ -416,7 +428,6 @@ export default function StoreSSG({
           </div>
         </motion.div>
 
-        {/* Sale Section - Optimized */}
         {initialSaleProducts.length > 0 && (
           <motion.div 
             initial="hidden"
@@ -447,7 +458,6 @@ export default function StoreSSG({
           </motion.div>
         )}
 
-        {/* Category Sections - Optimized */}
         <motion.div 
           initial="hidden"
           animate="visible"
@@ -468,31 +478,27 @@ export default function StoreSSG({
           </div>
         </motion.div>
 
-        {/* Products Section with Virtual Scrolling */}
         <div id="products-section">
-          {/* Results Counter */}
           <div className="flex justify-between items-center mb-6">
             <p className="text-gray-600">
               Showing <span className="font-semibold text-gray-900">{filteredProducts.length}</span> of <span className="font-semibold text-gray-900">{initialProducts.length}</span> fragrances
             </p>
             
-            {/* Quick sort and clear */}
             <div className="flex gap-3">
-<label htmlFor="sortBy" className="sr-only">
-  Sort products by
-</label>
-<select
-  id="sortBy"
-  value={sortBy}
-  onChange={(e) => setSortBy(e.target.value)}
-  className="px-4 py-2 border border-gray-300 bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-red-900 text-gray-900"
->
-  <option value="newest">Newest First</option>
-  <option value="price-low">Price: Low to High</option>
-  <option value="price-high">Price: High to Low</option>
-  <option value="name">Name A-Z</option>
-</select>
-
+              <label htmlFor="sortBy" className="sr-only">
+                Sort products by
+              </label>
+              <select
+                id="sortBy"
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="px-4 py-2 border border-gray-300 bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-red-900 text-gray-900"
+              >
+                <option value="newest">Newest First</option>
+                <option value="price-low">Price: Low to High</option>
+                <option value="price-high">Price: High to Low</option>
+                <option value="name">Name A-Z</option>
+              </select>
               
               <button
                 className="px-4 py-2 bg-red-900 hover:bg-red-600 rounded-lg text-sm font-medium text-white transition-colors"
@@ -503,7 +509,6 @@ export default function StoreSSG({
             </div>
           </div>
 
-          {/* Virtual Product Grid */}
           <VirtualProductGrid
             products={filteredProducts}
             hoveredId={hoveredId}
