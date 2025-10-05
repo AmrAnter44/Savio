@@ -34,6 +34,7 @@ export default function Navbar() {
       >
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center text-black">
           {/* ✅ Logo */}
+          <Link href="/">
           <motion.div whileHover={{ scale: 1.05 }} transition={{ duration: 0.2 }}>
             <Image
               src={scrolled ? "/darklogo.webp" : "/whitelogo.webp"}
@@ -43,7 +44,7 @@ export default function Navbar() {
               className="object-contain"
             />
           </motion.div>
-
+</Link>
           {/* ✅ Links */}
           <div className="flex gap-4">
             <div className=" flex items-center justify-between text-xl font-bold text ">
