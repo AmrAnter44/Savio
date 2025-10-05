@@ -28,28 +28,26 @@ const itemVariants = {
 };
 
 /**
- * ✅ FIXED: Related Products - No API calls, uses page context only
+ * ✅ FIXED: Related Products - Filters out Out of Stock products
  */
-export default function RelatedProducts({ currentProduct }) {
+export default function RelatedProducts({ currentProduct, relatedProducts = [] }) {
   const [related, setRelated] = useState([])
   const [hoveredId, setHoveredId] = useState(null);
 
   useEffect(() => {
     if (!currentProduct) return
     
-    // 🔒 REMOVED: API call to supabase
-    // 🔒 REMOVED: Database fetch
+    // ✅ فلترة المنتجات لإزالة Out of Stock
+    const inStockProducts = relatedProducts.filter(product => 
+      product.in_stock !== false
+    )
     
-    // Instead, show a message that related products need to be passed as props
-    console.log('⚠️ RelatedProducts: No API calls allowed. Related products should be passed via SSG.')
+    setRelated(inStockProducts)
     
-    // For now, set empty array
-    setRelated([])
-    
-  }, [currentProduct])
+  }, [currentProduct, relatedProducts])
 
   // If no related products, don't render anything
-
+  if (related.length === 0) return null
 
   // Calculate discount percentage
   const getDiscountPercentage = (originalPrice, salePrice) => {
@@ -102,7 +100,7 @@ export default function RelatedProducts({ currentProduct }) {
                   />
 
                   {product.newprice && (
-                    <div className="absolute top-3 left-3 bg text-white px-3 py-1 rounded-full text-xs font-bold">
+                    <div className="absolute top-3 left-3 bg-red-900 text-white px-3 py-1 rounded-full text-xs font-bold">
                       {getDiscountPercentage(product.price, product.newprice)}% OFF
                     </div>
                   )}
