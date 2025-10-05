@@ -3,7 +3,6 @@
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import Image from "next/image"
-import RelatedProducts from "../../RelatedProducts"
 import { useMyContext } from "../../../context/CartContext"
 import toast, { Toaster } from 'react-hot-toast'
 
@@ -414,7 +413,10 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
 }
 
 function RelatedProductsSSG({ products, currentProduct }) {
-  if (!products || products.length === 0) return null
+  // ✅ فلترة المنتجات - إخفاء المنتجات الـ out of stock
+  const availableProducts = products.filter(product => product.in_stock !== false)
+  
+  if (!availableProducts || availableProducts.length === 0) return null
 
   return (
     <motion.div 
@@ -432,8 +434,8 @@ function RelatedProductsSSG({ products, currentProduct }) {
         <p className="text-xl text-gray-600">Similar fragrances based on your selection</p>
       </motion.div>
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {products.map((product, index) => (
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {availableProducts.map((product, index) => (
           <motion.div
             key={product.id}
             initial={{ opacity: 0, y: 20 }}
