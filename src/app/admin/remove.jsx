@@ -89,14 +89,26 @@ export default function ManageFragrances() {
   const [productToDelete, setProductToDelete] = useState(null);
   const [deleting, setDeleting] = useState(false);
 
-  const sizeOptions = ["50ml", "100ml", "150ml", "200ml", "250ml"];
-  const typeOptions = ["women", "men", "master"];
+  const sizeOptions = ["30ml","50ml","70ml","90ml", "75ml", "100ml","120ml","125ml", "150ml", "200ml", "250ml"]
+  const typeOptions = ["women", "men", "master","unisex"]
   const brandOptions = [
     "Chanel", "Dior", "Tom Ford", "Creed", "Hermès", "Yves Saint Laurent",
     "Versace", "Gucci", "Prada", "Armani", "Calvin Klein", "Hugo Boss",
     "Dolce & Gabbana", "Viktor & Rolf", "Jean Paul Gaultier", "Thierry Mugler",
-    "Maison Margiela", "Byredo", "Le Labo", "Diptyque", "Other"
-  ];
+    "Maison Margiela", "Byredo", "Le Labo", "Diptyque", "Jo Malone",
+    "Lancôme", "Givenchy", "Bvlgari", "Cartier", "Burberry", "Salvatore Ferragamo",
+    "Montblanc", "Carolina Herrera", "Valentino", "Marc Jacobs", "Kenzo",
+    "Issey Miyake", "Paco Rabanne", "Balenciaga", "Azzaro", "Narciso Rodriguez",
+    "Zara", "Abercrombie & Fitch", "Victoria's Secret", "Bath & Body Works","Rabanne" ,"Gissah","Roberto Cavalli ","Nishane",
+    "Amouage", "Parfums de Marly", "Initio", "Kilian", "Clive Christian",
+    "Xerjoff", "Roja Parfums", "Tiziana Terenzi", "Mancera", "Montale",
+    "Maison Francis Kurkdjian", "Ormonde Jayne", "Penhaligon's","Armaf",
+    "Acqua di Parma", "Guerlain", "Etat Libre d'Orange", "Frederic Malle","Kayali Fragrances","Giorgio Armani","Nasomatto",
+    "Arabian Oud", "Ajmal", "Rasasi", "Al Haramain", "Swiss Arabian",
+    "Nabeel", "Khaltat", "Ard Al Zaafaran", "Lattafa", "Asgharali",
+    "Shaikh Perfumes", "Oud Elite", "Khaleejiyah", "Makkaj","de Marly",
+    "Other"
+  ]
 
   const filteredProducts = useMemo(() => {
     if (!searchTerm.trim()) return products;
