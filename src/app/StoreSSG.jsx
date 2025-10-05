@@ -404,28 +404,7 @@ export default function StoreSSG({
           <h1 className="text-5xl font-bold mb-4 text-gray-900">Our Fragrance Collection</h1>
           <p className="text-xl mb-8 text-gray-600">Discover premium perfumes and captivating scents</p>
           
-          <div className="max-w-md mx-auto relative">
-            <svg 
-              className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" 
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
-            >
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth={2} 
-                d="m21 21-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" 
-              />
-            </svg>
-            <input
-              type="text"
-              placeholder="Search fragrances..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-red-900 focus:border-transparent text-center"
-            />
-          </div>
+
         </motion.div>
 
         {initialSaleProducts.length > 0 && (
@@ -477,6 +456,7 @@ export default function StoreSSG({
             ))}
           </div>
         </motion.div>
+        
 
         <div id="products-section">
           <div className="flex justify-between items-center mb-6">
@@ -507,6 +487,52 @@ export default function StoreSSG({
                 Clear All
               </button>
             </div>
+          </div>
+
+
+
+          <div className="max-w-2xl mx-auto relative my-15">
+            <svg 
+              className="absolute left-5 top-1/2 transform -translate-y-1/2 text-gray-400 w-6 h-6" 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                strokeWidth={2} 
+                d="m21 21-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" 
+              />
+            </svg>
+            <input
+              type="text"
+              placeholder="Search by name or brand..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-14 pr-12 py-4 border-2 border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-red-900 focus:border-red-900 text-gray-900 text-lg transition-all shadow-sm hover:shadow-md"
+            />
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm("")}
+                className="absolute right-5 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-red-900 transition-colors"
+                aria-label="Clear search"
+              >
+                <svg 
+                  className="w-6 h-6" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2} 
+                    d="M6 18L18 6M6 6l12 12" 
+                  />
+                </svg>
+              </button>
+            )}
           </div>
 
           <VirtualProductGrid
