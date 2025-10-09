@@ -5,6 +5,8 @@ const nextConfig = {
   
   // ✅ Image optimization settings - FIXED for Next.js 15
   images: {
+    unoptimized: true,
+
     remotePatterns: [
       {
         protocol: 'https',
