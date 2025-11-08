@@ -71,7 +71,7 @@ export default function AddToCartPopup({ isOpen, onClose, productName }) {
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header with Icon */}
-            <div className="bg-gradient-to-r from-green-500 to-green-600 p-6 text-center">
+            <div className="bg-gradient-to-r from-red-800 to-red-600 p-6 text-center">
               <motion.div
                 initial={{ scale: 0, rotate: -180 }}
                 animate={{ scale: 1, rotate: 0 }}
@@ -85,7 +85,7 @@ export default function AddToCartPopup({ isOpen, onClose, productName }) {
               >
                 <div className="bg-white rounded-full p-4 inline-block">
                   <svg 
-                    className="w-12 h-12 text-green-600" 
+                    className="w-12 h-12 text-red-600" 
                     fill="none" 
                     stroke="currentColor" 
                     viewBox="0 0 24 24"
@@ -106,7 +106,7 @@ export default function AddToCartPopup({ isOpen, onClose, productName }) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: 0.3 }}
               >
-                تم الإضافة بنجاح!
+                Added Successfully!
               </motion.h2>
             </div>
 
@@ -119,10 +119,10 @@ export default function AddToCartPopup({ isOpen, onClose, productName }) {
                 className="text-center mb-6"
               >
                 <p className="text-gray-700 text-lg mb-2">
-                  تم إضافة <span className="font-bold text-gray-900">{productName}</span> للسلة
+                  <span className="font-bold text-gray-900">{productName}</span> has been added to your cart
                 </p>
                 <p className="text-gray-600 text-sm">
-                  هل تريد إكمال عملية الشراء الآن؟
+                  Would you like to proceed to checkout now?
                 </p>
               </motion.div>
 
@@ -135,7 +135,7 @@ export default function AddToCartPopup({ isOpen, onClose, productName }) {
               >
                 <motion.button
                   onClick={handleCheckout}
-                  className="flex-1 bg-gradient-to-r from-green-600 to-green-700 text-white font-bold py-4 px-6 rounded-xl hover:from-green-700 hover:to-green-800 transition-all shadow-lg"
+                  className="flex-1 bg-gradient-to-r from-red-900 to-red-800 text-white font-bold py-4 px-6 rounded-xl hover:from-green-700 hover:to-green-800 transition-all shadow-lg"
                   variants={buttonVariants}
                   whileHover="hover"
                   whileTap="tap"
@@ -154,7 +154,7 @@ export default function AddToCartPopup({ isOpen, onClose, productName }) {
                         d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" 
                       />
                     </svg>
-                    <span>إكمال الطلب</span>
+                    <span>Checkout</span>
                   </div>
                 </motion.button>
 
@@ -179,7 +179,7 @@ export default function AddToCartPopup({ isOpen, onClose, productName }) {
                         d="M12 6v6m0 0v6m0-6h6m-6 0H6" 
                       />
                     </svg>
-                    <span>إضافة المزيد</span>
+                    <span>Add More</span>
                   </div>
                 </motion.button>
               </motion.div>
@@ -192,7 +192,7 @@ export default function AddToCartPopup({ isOpen, onClose, productName }) {
                 className="mt-4 text-center"
               >
                 <p className="text-xs text-gray-500">
-                  🚚 شحن مجاني للطلبات فوق 1500 جنيه
+                  🚚 Free shipping for orders over 1500 EGP
                 </p>
               </motion.div>
             </div>
