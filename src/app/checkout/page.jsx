@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useMyContext } from "../../context/CartContext";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import { useBuy2Get1Promotion } from "../../../hooks/useBuy2Get1Promotion";
 
 // Animation variants
 const containerVariants = {
@@ -105,8 +106,11 @@ export default function CheckoutPage() {
   const [errorMessage, setErrorMessage] = useState("");
   const router = useRouter();
 
+  // ✅ استخدام الـ Hook لحساب Buy 2 Get 1
+  const promotion = useBuy2Get1Promotion(cart);
+
   // حساب التوتال والوفورات
-  const totals = cart.reduce(
+  const regularTotals = cart.reduce(
     (acc, item) => {
       const originalPrice = item.price * item.quantity;
       const finalPrice = (item.newprice ? item.newprice : item.price) * item.quantity;
@@ -119,6 +123,13 @@ export default function CheckoutPage() {
     },
     { originalTotal: 0, finalTotal: 0, totalSavings: 0 }
   );
+
+  // ✅ استخدام الأسعار من الـ promotion إذا كان نشط
+  const finalTotals = promotion.isActive ? {
+    originalTotal: promotion.originalTotal,
+    finalTotal: promotion.finalTotal,
+    totalSavings: promotion.savings
+  } : regularTotals;
 
   const handleSendWhatsApp = () => {
     setErrorMessage("");
@@ -142,21 +153,17 @@ export default function CheckoutPage() {
       return;
     }
 
-    // إنشاء رسالة WhatsApp محسنة مع الخصومات
+    // إنشاء رسالة WhatsApp محسنة مع عرض Buy 2 Get 1
     let cartDetails = "";
-    let totalOriginalPrice = 0;
-    let totalSavings = 0;
+    let itemNumber = 1;
 
-    cart.forEach((item, index) => {
+    cart.forEach((item) => {
       const itemPrice = item.newprice ? item.newprice : item.price;
       const originalItemPrice = item.price * item.quantity;
       const finalItemPrice = itemPrice * item.quantity;
       const itemSavings = originalItemPrice - finalItemPrice;
-      
-      totalOriginalPrice += originalItemPrice;
-      totalSavings += itemSavings;
 
-      cartDetails += `${index + 1}. ${item.name}\n`;
+      cartDetails += `${itemNumber}. ${item.name}\n`;
       
       if (item.brand) {
         cartDetails += `   Brand: ${item.brand}\n`;
@@ -172,42 +179,58 @@ export default function CheckoutPage() {
         cartDetails += `   Size: ${item.selectedSize}\n`;
       }
 
-      // عرض السعر مع الخصم إن وجد
+      // عرض السعر
       if (item.newprice && item.newprice < item.price) {
         const discountPercentage = Math.round(((item.price - item.newprice) / item.price) * 100);
-        cartDetails += `   Sale Price: ${item.newprice} LE ${item.quantity > 1 ? `× ${item.quantity}` : ''} = ${finalItemPrice} LE\n`;
+        cartDetails += `   Sale Price: ${item.newprice} LE × ${item.quantity} = ${finalItemPrice} LE\n`;
         cartDetails += `   💰 Discount: ${discountPercentage}% OFF\n`;
       } else {
         cartDetails += `   Price: ${finalItemPrice} LE\n`;
       }
 
       cartDetails += "   ═══════════════════════\n";
+      itemNumber++;
     });
 
     // إنشاء الرسالة النهائية
-    let message = ` *Savio Fragrances - New Order* \n\n`;
-    message += ` *Customer Information:*\n`;
-    message += ` Name: ${name}\n`;
-    message += ` Address: ${address}\n`;
-    message += ` Phone: ${phone}\n\n`;
+    let message = `🌸 *Savio Fragrances - New Order* 🌸\n\n`;
+    message += `👤 *Customer Information:*\n`;
+    message += `📝 Name: ${name}\n`;
+    message += `📍 Address: ${address}\n`;
+    message += `📱 Phone: ${phone}\n\n`;
     
-    message += ` *Order Details:*\n`;
+    message += `🛍️ *Order Details:*\n`;
     message += `${cartDetails}\n`;
 
     // ملخص الأسعار
+    message += `💵 *Price Summary:*\n`;
+    message += `   Subtotal: ${finalTotals.originalTotal} LE\n`;
 
-
-    
-    message += `   🏷️ *Final Total: ${totals.finalTotal} LE*\n\n`;
-
-    if (totalSavings > 0) {
-      message += `🎉 *Congratulations!* You saved ${totalSavings} LE on this order!\n\n`;
+    // عرض خصومات المنتجات العادية
+    if (regularTotals.totalSavings > 0 && !promotion.isActive) {
+      message += `   Product Discounts: -${regularTotals.totalSavings} LE\n`;
     }
 
-    message += ` Please confirm this order to proceed with delivery.\n`;
-    message += ` Free delivery !\n`;
-    message += ` Expected delivery: 2-4 business days\n\n`;
-    message += `Thank you for choosing Savio Fragrances! `;
+    // ✅ عرض Buy 2 Get 1 Free Savings
+    if (promotion.isActive && promotion.savings > 0) {
+      message += `   🎁 *Buy 2 Get 1 FREE*: -${promotion.savings} LE\n`;
+      message += `   (${promotion.freeItemsCount} item${promotion.freeItemsCount > 1 ? 's' : ''} FREE!)\n`;
+    }
+    
+    message += `   🏷️ *Final Total: ${finalTotals.finalTotal} LE*\n\n`;
+
+    if (finalTotals.totalSavings > 0) {
+      message += `🎉 *Congratulations!* You saved ${finalTotals.totalSavings} LE on this order!\n`;
+      if (promotion.isActive) {
+        message += `   💝 Includes Buy 2 Get 1 FREE savings\n`;
+      }
+      message += `\n`;
+    }
+
+    message += `✅ Please confirm this order to proceed with delivery.\n`;
+    message += `🚚 Free delivery!\n`;
+    message += `⏰ Expected delivery: 2-4 business days\n\n`;
+    message += `Thank you for choosing Savio Fragrances! 🌸`;
 
     const yourWhatsAppNumber = "201155060205";
     const encodedMessage = encodeURIComponent(message);
@@ -245,32 +268,60 @@ export default function CheckoutPage() {
             <span>{cart.reduce((total, item) => total + item.quantity, 0)} pieces</span>
           </div>
           
-          {totals.totalSavings > 0 && (
+          {finalTotals.totalSavings > 0 && (
             <>
               <div className="flex justify-between text-gray-600">
                 <span>Subtotal (Original):</span>
-                <span className="line-through">{totals.originalTotal} LE</span>
+                <span className="line-through">{finalTotals.originalTotal} LE</span>
               </div>
-              <div className="flex justify-between text-green-600 font-medium">
-                <span>Your Savings:</span>
-                <span>-{totals.totalSavings} LE</span>
-              </div>
+
+              {/* عرض خصومات المنتجات */}
+              {regularTotals.totalSavings > 0 && !promotion.isActive && (
+                <div className="flex justify-between text-green-600 font-medium">
+                  <span>Product Discounts:</span>
+                  <span>-{regularTotals.totalSavings} LE</span>
+                </div>
+              )}
+
+              {/* عرض Buy 2 Get 1 Savings */}
+              {promotion.isActive && promotion.savings > 0 && (
+                <div className="flex justify-between text-purple-600 font-medium">
+                  <span>🎁 Buy 2 Get 1 FREE:</span>
+                  <span>-{promotion.savings} LE</span>
+                </div>
+              )}
             </>
           )}
           
           <div className="border-t pt-2 mt-2">
             <div className="flex justify-between text-xl font-bold text-gray-900">
               <span>Total:</span>
-              <span>{totals.finalTotal} LE</span>
+              <span>{finalTotals.finalTotal} LE</span>
             </div>
           </div>
 
-          {totals.totalSavings > 0 && (
+          {/* Buy 2 Get 1 Badge */}
+          {promotion.isActive && promotion.freeItemsCount > 0 && (
+            <div className="bg-gradient-to-r from-purple-100 to-pink-100 border border-purple-300 rounded-lg p-3 mt-3">
+              <div className="flex items-center gap-2 text-purple-700 text-sm">
+                <span>🎁</span>
+                <div>
+                  <p className="font-bold">Buy 2 Get 1 FREE Applied!</p>
+                  <p className="text-xs">
+                    {promotion.freeItemsCount} item{promotion.freeItemsCount > 1 ? 's' : ''} free - 
+                    Saving {promotion.savings} LE
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {finalTotals.totalSavings > 0 && (
             <div className="bg-green-100 border border-green-200 rounded-lg p-3 mt-3">
               <div className="flex items-center gap-2 text-green-700 text-sm">
                 <span>🎉</span>
                 <span className="font-medium">
-                  You're saving {totals.totalSavings} LE ({Math.round((totals.totalSavings / totals.originalTotal) * 100)}% discount)!
+                  You're saving {finalTotals.totalSavings} LE ({Math.round((finalTotals.totalSavings / finalTotals.originalTotal) * 100)}% discount)!
                 </span>
               </div>
             </div>
@@ -305,10 +356,6 @@ export default function CheckoutPage() {
               className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent transition"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              whileFocus={{
-                scale: 1.01,
-                transition: { duration: 0.2 }
-              }}
             />
           </motion.div>
           
@@ -322,10 +369,6 @@ export default function CheckoutPage() {
               className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent transition"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              whileFocus={{
-                scale: 1.01,
-                transition: { duration: 0.2 }
-              }}
             />
             <p className="text-xs text-gray-500 mt-1">
               Must start with 01 and be at least 11 digits
@@ -341,10 +384,6 @@ export default function CheckoutPage() {
               className="w-full p-4 border border-gray-300 rounded-lg h-24 resize-none focus:ring-2 focus:ring-gray-500 focus:border-transparent transition"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              whileFocus={{
-                scale: 1.01,
-                transition: { duration: 0.2 }
-              }}
             />
           </motion.div>
 
@@ -359,7 +398,7 @@ export default function CheckoutPage() {
               <span>📱</span>
               <span>Complete Order via WhatsApp</span>
               <span className="bg-white/20 px-2 py-1 rounded text-sm">
-                {totals.finalTotal} LE
+                {finalTotals.finalTotal} LE
               </span>
             </div>
           </motion.button>
@@ -373,9 +412,14 @@ export default function CheckoutPage() {
             <p>🔒 Your order will be sent securely via WhatsApp</p>
             <p>🚚 Free delivery for orders over 2000 LE</p>
             <p>⏰ Expected delivery: 2-4 business days</p>
-            {totals.totalSavings > 0 && (
+            {finalTotals.totalSavings > 0 && (
               <p className="text-green-600 font-medium">
-                💰 You're saving {totals.totalSavings} LE on this order!
+                💰 You're saving {finalTotals.totalSavings} LE on this order!
+              </p>
+            )}
+            {promotion.isActive && promotion.freeItemsCount > 0 && (
+              <p className="text-purple-600 font-medium">
+                🎁 Buy 2 Get 1 FREE Applied - {promotion.freeItemsCount} item{promotion.freeItemsCount > 1 ? 's' : ''} FREE!
               </p>
             )}
           </motion.div>

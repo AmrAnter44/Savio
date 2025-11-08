@@ -3,6 +3,7 @@ import { useMyContext } from "../../context/CartContext";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import { useBuy2Get1Promotion } from "../../../hooks/useBuy2Get1Promotion";
 
 // Animation variants
 const containerVariants = {
@@ -92,13 +93,15 @@ const emptyCartVariants = {
 export default function Cart() {
   const { cart, removeFromCart } = useMyContext();
   const router = useRouter();
+  
+  // ✅ استخدام الـ Hook لحساب Buy 2 Get 1
+  const promotion = useBuy2Get1Promotion(cart);
 
-  // حساب التوتال بالسعر الأصلي والسعر النهائي
-  const totals = cart.reduce(
+  // حساب التوتال بالسعر الأصلي والسعر النهائي (مع الخصومات العادية)
+  const regularTotals = cart.reduce(
     (acc, item) => {
-      const originalPrice = item.newprice ? item.newprice : item.price * item.quantity;
-      const finalPrice = (item.newprice ? item.newprice : item.price) * item.quantity;
-      console.log(cart);
+      const originalPrice = item.price * item.quantity;
+      const finalPrice = (item.newprice || item.price) * item.quantity;
       
       return {
         originalTotal: acc.originalTotal + originalPrice,
@@ -108,6 +111,13 @@ export default function Cart() {
     },
     { originalTotal: 0, finalTotal: 0, totalSavings: 0 }
   );
+
+  // ✅ استخدام الأسعار من الـ promotion إذا كان نشط
+  const finalTotals = promotion.isActive ? {
+    originalTotal: promotion.originalTotal,
+    finalTotal: promotion.finalTotal,
+    totalSavings: promotion.savings
+  } : regularTotals;
 
   const goToCheckout = () => {
     router.push("/checkout");
@@ -148,6 +158,43 @@ export default function Cart() {
         </motion.div>
       ) : (
         <>
+          {/* ✅ Buy 2 Get 1 Promotion Banner */}
+          {promotion.hasActivePromotion && !promotion.isActive && promotion.message && (
+            <motion.div
+              className="mb-6 p-4 bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-300 rounded-xl"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-3xl">🎁</span>
+                <div>
+                  <p className="font-bold text-purple-900">Buy 2 Get 1 Free!</p>
+                  <p className="text-sm text-purple-700">{promotion.message}</p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {promotion.isActive && promotion.freeItemsCount > 0 && (
+            <motion.div
+              className="mb-6 p-6 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-400 rounded-xl"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-4xl">🎉</span>
+                <div>
+                  <p className="font-bold text-green-900 text-lg">
+                    Congratulations! Buy 2 Get 1 FREE Applied!
+                  </p>
+                  <p className="text-green-700">
+                    You're getting {promotion.freeItemsCount} item{promotion.freeItemsCount > 1 ? 's' : ''} FREE!
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
           <motion.div 
             className="space-y-6 mb-8"
             variants={containerVariants}
@@ -230,7 +277,7 @@ export default function Cart() {
                             <div className="space-y-1">
                               {/* Original Price */}
                               <div className="text-sm text-gray-500 line-through">
-                                {item.price} 
+                                {item.price} LE
                               </div>
                               
                               {/* Sale Price */}
@@ -240,7 +287,6 @@ export default function Cart() {
                               
                               {/* Discount Badge & Savings */}
                               <div className="flex flex-col items-end gap-1">
-
                                 <span className="text-green-800 text-sm font-medium">
                                   You save: {itemSavings} LE
                                 </span>
@@ -281,38 +327,56 @@ export default function Cart() {
             
             <div className="space-y-2">
               {/* Original Total */}
-              {totals.totalSavings > 0 && (
+              {finalTotals.totalSavings > 0 && (
                 <div className="flex justify-between text-gray-600">
                   <span>Subtotal (Original Price):</span>
-                  <span className="line-through">{totals.originalTotal} LE</span>
+                  <span className="line-through">{finalTotals.originalTotal} LE</span>
                 </div>
               )}
 
-              {/* Savings */}
-              {totals.totalSavings > 0 && (
+              {/* Product Discounts */}
+              {regularTotals.totalSavings > 0 && !promotion.isActive && (
                 <div className="flex justify-between text-green-600 font-medium">
-                  <span>Total Savings:</span>
-                  <span>-{totals.totalSavings} LE</span>
+                  <span>Product Discounts:</span>
+                  <span>-{regularTotals.totalSavings} LE</span>
                 </div>
+              )}
+
+              {/* Buy 2 Get 1 Savings */}
+              {promotion.isActive && promotion.savings > 0 && (
+                <>
+                  <div className="flex justify-between text-purple-600 font-medium">
+                    <span>🎁 Buy 2 Get 1 FREE Savings:</span>
+                    <span>-{promotion.savings} LE</span>
+                  </div>
+                  <div className="text-sm text-purple-600">
+                    ({promotion.freeItemsCount} item{promotion.freeItemsCount > 1 ? 's' : ''} free)
+                  </div>
+                </>
               )}
 
               {/* Final Total */}
               <div className="border-t pt-3 mt-3">
                 <div className="flex justify-between text-xl font-bold text-gray-900">
                   <span>Total:</span>
-                  <span>{totals.finalTotal} LE</span>
+                  <span>{finalTotals.finalTotal} LE</span>
                 </div>
               </div>
 
               {/* Savings Summary */}
-              {totals.totalSavings > 0 && (
+              {finalTotals.totalSavings > 0 && (
                 <div className="bg-green-50 border border-green-200 rounded-lg p-3 mt-4">
                   <div className="flex items-center gap-2 text-green-700">
                     <span className="text-lg">🎉</span>
                     <span className="font-medium">
-                      Great! You're saving {totals.totalSavings} LE on this order!
+                      Great! You're saving {finalTotals.totalSavings} LE on this order!
                     </span>
                   </div>
+                  {promotion.isActive && (
+                    <p className="text-xs text-green-600 mt-2">
+                      Includes Buy 2 Get 1 FREE savings of {promotion.savings} LE
+                    </p>
+                  )}
                 </div>
               )}
             </div>
@@ -330,7 +394,7 @@ export default function Cart() {
               whileHover="hover"
               whileTap="tap"
             >
-              Proceed to Checkout ({totals.finalTotal} LE)
+              Proceed to Checkout ({finalTotals.finalTotal} LE)
             </motion.button>
             
             <motion.p
@@ -340,9 +404,9 @@ export default function Cart() {
               transition={{ duration: 0.5, delay: 0.3 }}
             >
               Your order details will be sent to WhatsApp for quick confirmation.
-              {totals.totalSavings > 0 && (
+              {finalTotals.totalSavings > 0 && (
                 <span className="block mt-1 text-green-600 font-medium">
-                  💰 Your total savings: {totals.totalSavings} LE
+                  💰 Your total savings: {finalTotals.totalSavings} LE
                 </span>
               )}
             </motion.p>

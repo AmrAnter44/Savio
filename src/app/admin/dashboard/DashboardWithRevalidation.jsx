@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react"
 import AddProduct from "../add"
 import RemoveProduct from "../remove"
+import PromotionsManager from "../PromotionsManager"
 import { motion, AnimatePresence } from "framer-motion"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabaseClient"
@@ -212,13 +213,10 @@ export default function DashboardWithRevalidation() {
         </div>
       </motion.div>
 
+
+      
       {/* Tabs */}
-      <motion.div
-        className="flex gap-4 mb-6 justify-center items-center"
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.2 }}
-      >
+      <motion.div className="flex gap-4 mb-6 justify-center items-center">
         <motion.button
           className={`px-6 py-3 rounded-lg font-semibold transition-colors ${
             activeTab === "add"
@@ -226,8 +224,6 @@ export default function DashboardWithRevalidation() {
               : "bg-gray-200 text-gray-800 hover:bg-gray-300"
           }`}
           onClick={() => setActiveTab("add")}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
         >
           ➕ إضافة منتج جديد
         </motion.button>
@@ -239,28 +235,32 @@ export default function DashboardWithRevalidation() {
               : "bg-gray-200 text-gray-800 hover:bg-gray-300"
           }`}
           onClick={() => setActiveTab("remove")}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
         >
           📝 إدارة المنتجات
+        </motion.button>
+
+        {/* ✨ الزر الجديد */}
+        <motion.button
+          className={`px-6 py-3 rounded-lg font-semibold transition-colors ${
+            activeTab === "promotions"
+              ? "bg-red-900 text-white"
+              : "bg-gray-200 text-gray-800 hover:bg-gray-300"
+          }`}
+          onClick={() => setActiveTab("promotions")}
+        >
+          🎁 العروض الترويجية
         </motion.button>
       </motion.div>
 
       {/* Content */}
       <AnimatePresence mode="wait">
-        <motion.div
-          key={activeTab}
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -20 }}
-          transition={{ duration: 0.3 }}
-        >
+        <motion.div key={activeTab}>
           {activeTab === "add" && <AddProduct />}
           {activeTab === "remove" && <RemoveProduct />}
+          {activeTab === "promotions" && <PromotionsManager />}  {/* ✨ السطر الجديد */}
         </motion.div>
       </AnimatePresence>
       
-  
     </motion.div>
   )
 }

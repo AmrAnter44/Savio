@@ -1,0 +1,55 @@
+{
+  "name": "Savio Fragrances",
+  "short_name": "Savio",
+  "description": "Luxury perfumes and fragrances store",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#85242C",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/darklogo.webp",
+      "sizes": "192x192",
+      "type": "image/webp",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/darklogo.webp",
+      "sizes": "512x512",
+      "type": "image/webp",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": [
+    "shopping",
+    "lifestyle"
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Shop",
+      "short_name": "Shop",
+      "description": "Browse our fragrance collection",
+      "url": "/store",
+      "icons": [
+        {
+          "src": "/darklogo.webp",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Cart",
+      "short_name": "Cart",
+      "description": "View your shopping cart",
+      "url": "/cart",
+      "icons": [
+        {
+          "src": "/darklogo.webp",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ]
+}

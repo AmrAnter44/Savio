@@ -1,12 +1,15 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "../../lib/supabaseClient";
+import AddToCartPopup from "../app/components/AddToCartPopup";
 
 const MyContext = createContext();
 
 export const MyContextProvider = ({ children }) => {
   const [cart, setCart] = useState([]);
+  const [showFirstItemPopup, setShowFirstItemPopup] = useState(false);
+  const [lastAddedProduct, setLastAddedProduct] = useState(null);
 
   // استرجاع cart من localStorage أول مرة
   useEffect(() => {
@@ -44,6 +47,12 @@ export const MyContextProvider = ({ children }) => {
           item.selectedColor === prod.selectedColor &&
           item.selectedSize === prod.selectedSize
       );
+
+      // ✅ إذا كانت السلة فارغة، اعرض الـ popup
+      if (prev.length === 0 && !existing) {
+        setLastAddedProduct(prod.name);
+        setShowFirstItemPopup(true);
+      }
 
       if (existing) {
         return prev.map((item) =>
@@ -98,6 +107,11 @@ export const MyContextProvider = ({ children }) => {
       }}
     >
       {children}
+      <AddToCartPopup 
+        isOpen={showFirstItemPopup}
+        onClose={() => setShowFirstItemPopup(false)}
+        productName={lastAddedProduct}
+      />
     </MyContext.Provider>
   );
 };

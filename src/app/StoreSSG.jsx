@@ -5,6 +5,8 @@ import Link from "next/link"
 import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
 import { FaFilter, FaFilterCircleXmark, FaFire } from "react-icons/fa6"
+import Buy2Get1Banner from "../app/components/Buy2Get1Banner"
+import { useHasActivePromotion } from "../../hooks/useBuy2Get1Promotion"
 
 const ProductImage = memo(({ product, isHovered, className, priority = false, index = 0 }) => {
   const [imageSrc, setImageSrc] = useState(product.pictures?.[0] || "/placeholder.png")
@@ -116,7 +118,6 @@ const ProductCard = memo(({ product, index, hoveredId, setHoveredId }) => {
     return Math.round(((originalPrice - salePrice) / originalPrice) * 100)
   }, [])
 
-  // ✅ تحديد ما إذا كان المنتج out of stock
   const isOutOfStock = product.in_stock === false
 
   return (
@@ -139,7 +140,6 @@ const ProductCard = memo(({ product, index, hoveredId, setHoveredId }) => {
               index={index}
             />
 
-            {/* ✅ Out of Stock Badge - يظهر فوق كل شيء */}
             {isOutOfStock && (
               <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-20">
                 <div className="bg-red-600 text-white px-6 py-3 rounded-lg font-bold text-lg shadow-lg">
@@ -189,7 +189,6 @@ const ProductCard = memo(({ product, index, hoveredId, setHoveredId }) => {
               )}
             </div>
             
-            {/* ✅ Out of Stock Text */}
             {isOutOfStock && (
               <div className="mt-2 text-center">
                 <span className="text-red-600 font-semibold text-sm">
@@ -309,6 +308,9 @@ export default function StoreSSG({
   const [showFilters, setShowFilters] = useState(false)
   const [sortBy, setSortBy] = useState("newest")
 
+  // ✅ استخدام الـ Hook للتحقق من العرض النشط
+  const { hasPromotion, loading: promotionLoading } = useHasActivePromotion()
+
   console.log(`🏪 StoreSSG rendered with ${initialProducts.length} products (STATIC DATA ONLY)`)
 
   const getAllBrands = useCallback(() => {
@@ -317,7 +319,6 @@ export default function StoreSSG({
 
   const brands = useMemo(() => getAllBrands(), [getAllBrands])
 
-  // ✅ فلترة مع ترتيب Out of Stock في الأسفل
   const filteredProducts = useMemo(() => {
     let filtered = initialProducts.filter((product) => {
       let typeMatch = true
@@ -346,16 +347,13 @@ export default function StoreSSG({
       )
     })
 
-    // ✅ ترتيب: In Stock أولاً، ثم Out of Stock في الأسفل
     filtered = filtered.sort((a, b) => {
       const aInStock = a.in_stock !== false
       const bInStock = b.in_stock !== false
       
-      // ضع Out of Stock في الأسفل
       if (aInStock && !bInStock) return -1
       if (!aInStock && bInStock) return 1
       
-      // إذا كانا من نفس النوع، رتب حسب sortBy
       switch (sortBy) {
         case "price-low":
           return (a.newprice || a.price) - (b.newprice || b.price)
@@ -403,9 +401,10 @@ export default function StoreSSG({
         >
           <h1 className="text-5xl font-bold mb-4 text-gray-900">Our Fragrance Collection</h1>
           <p className="text-xl mb-8 text-gray-600">Discover premium perfumes and captivating scents</p>
-          
-
         </motion.div>
+
+        {/* ✅ عرض البانر عند تفعيل Buy 2 Get 1 */}
+        {!promotionLoading && hasPromotion && <Buy2Get1Banner />}
 
         {initialSaleProducts.length > 0 && (
           <motion.div 
@@ -488,8 +487,6 @@ export default function StoreSSG({
               </button>
             </div>
           </div>
-
-
 
           <div className="max-w-2xl mx-auto relative my-15">
             <svg 
