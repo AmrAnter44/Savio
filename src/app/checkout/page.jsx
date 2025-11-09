@@ -243,7 +243,7 @@ export default function CheckoutPage() {
 
   return (
     <motion.div 
-      className="max-w-2xl mx-auto p-6 mt-16 min-h-screen"
+      className="max-w-2xl mx-auto p-6 mt-16 mb-80 min-h-screen"
       initial="hidden"
       animate="visible"
       variants={containerVariants}
